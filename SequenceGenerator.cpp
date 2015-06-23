@@ -15,23 +15,7 @@ int line = 10;
 int diffNum = 10;
 
 
-int RandRange(int min, int max) {
-    return min + (rand() % (int) (max - min + 1));
-}
-
-
-string RandString(string s, int change_num) {
-    for (int i = 0; i < change_num; ++i) {
-        int randStrIndex = RandRange(0, (int) s.length() - 1);
-        int randCIndex = RandRange(0, (int) strlen(clist) - 1);
-        s[randStrIndex] = clist[randCIndex];
-    }
-    return s;
-}
-
-
-int main(int argc, char *argv[]) {
-
+void ParseArgs(int argc, char *const *argv) {
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-c")) {
             clist = argv[++i];
@@ -59,13 +43,34 @@ int main(int argc, char *argv[]) {
             cout << "different char number each line: "<< diffNum << endl;
         }
     }
+}
+
+
+int RandRange(int min, int max) {
+    return min + (rand() % (max - min + 1));
+}
+
+
+string RandString(string s, int change_num) {
+    for (int i = 0; i < change_num; ++i) {
+        int randStrIndex = RandRange(0, (int) s.length() - 1);
+        int randCIndex = RandRange(0, (int) strlen(clist) - 1);
+        s[randStrIndex] = clist[randCIndex];
+    }
+    return s;
+}
+
+
+int main(int argc, char *argv[]) {
+
+    ParseArgs(argc, argv);
 
     if (clist == NULL) {
         clist = new char[4]{'A', 'C', 'G', 'T'};
     }
 
     string randStr;
-    srand((unsigned int)time(0));
+    srand((unsigned int) time(0));
 
     for (int i = 0; i < len; ++i) {
         int randCIndex = RandRange(0, (int) strlen(clist) - 1);
