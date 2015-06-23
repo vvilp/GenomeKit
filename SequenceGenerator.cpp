@@ -1,7 +1,7 @@
 //
 // Generator similar random sequence
 //
-// SequenceGenerator -c "ACGT" -len 500 -line 20 -diffNum 10 (-diffRate 0.2)
+// SequenceGenerator -c "ACGT" -len 500 -line 20 -diffNum 10 (-diffRate 0.2) -out test.txt
 
 
 #include <iostream>
@@ -9,11 +9,11 @@
 
 using namespace std;
 
-char *clist = NULL;
+const char *clist = NULL;
 int len = 100;
 int line = 10;
 int diffNum = 10;
-
+const char *filePath = NULL;
 
 void ParseArgs(int argc, char *const *argv) {
     for (int i = 1; i < argc; i++) {
@@ -42,6 +42,11 @@ void ParseArgs(int argc, char *const *argv) {
             diffNum = int (double(len) * diffRate);
             cout << "different char number each line: "<< diffNum << endl;
         }
+
+        if (!strcmp(argv[i], "-out")) {
+            filePath = argv[++i];
+            cout << "output file path: "<< filePath << endl;
+        }
     }
 }
 
@@ -66,7 +71,11 @@ int main(int argc, char *argv[]) {
     ParseArgs(argc, argv);
 
     if (clist == NULL) {
-        clist = new char[4]{'A', 'C', 'G', 'T'};
+        clist = "ACGT";
+    }
+
+    if (filePath == NULL) {
+        filePath = "example.txt";
     }
 
     string randStr;
@@ -78,7 +87,7 @@ int main(int argc, char *argv[]) {
     }
 
     ofstream file;
-    file.open("example.txt");
+    file.open(filePath);
     for (int i = 0; i < line; ++i) {
         file << RandString(randStr, diffNum) << endl;
     }
