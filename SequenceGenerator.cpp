@@ -19,17 +19,17 @@ void ParseArgs(int argc, char *const *argv) {
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-c")) {
             clist = argv[++i];
-            cout << "Generate From: "<< diffNum << endl;
+            cout << "Generate From: "<< clist << endl;
         }
 
         if (!strcmp(argv[i], "-len")) {
             len = atoi(argv[++i]);
-            cout << "Generate length: "<< diffNum << endl;
+            cout << "Generate length: "<< len << endl;
         }
 
         if (!strcmp(argv[i], "-line")) {
             line = atoi(argv[++i]);
-            cout << "Generate lines: "<< diffNum << endl;
+            cout << "Generate lines: "<< line << endl;
         }
 
         if (!strcmp(argv[i], "-diffNum")) {
