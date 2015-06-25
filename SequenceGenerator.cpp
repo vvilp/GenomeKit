@@ -15,7 +15,7 @@ int line = 10;
 int diffNum = 10;
 const char *filePath = NULL;
 
-void ParseArgs(int argc, char *const *argv) {
+void ParseArgs(int argc, char *argv[]) {
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-c")) {
             clist = argv[++i];
