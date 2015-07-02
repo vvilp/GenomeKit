@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <map>
+#include <omp.h>
 using namespace std;
 
 int CountSubstring(const std::string& str, const std::string& sub)
@@ -46,9 +48,33 @@ vector<string> KmerGenerator(const string& letters, int k)
 }
 
 
-int main()
+string filePathFrom;
+string filePathTo;
+int k_kmer;
+void ParseArgs(int argc, char *argv[]) {
+	for (int i = 1; i < argc; i++) {
+		if (!strcmp(argv[i], "-i")) {
+			filePathFrom = argv[++i];
+			cout << "Generate From: " << filePathFrom << endl;
+		}
+
+		if (!strcmp(argv[i], "-o")) {
+			filePathTo = argv[++i];
+			cout << "output file path: " << filePathTo << endl;
+		}
+
+		if (!strcmp(argv[i], "-k")) {
+			k_kmer = atoi(argv[++i]);
+			cout << "k: " << k_kmer << endl;
+		}
+	}
+}
+
+
+int main(int argc, char *argv[])
 {
-    ifstream infile("/Volumes/Macintosh\ HD\ New/Documents/Data/Genome/all.fna/Escherichia_coli__BL21_Gold_DE3_pLysS_AG__uid59245/NC_012947.fna");
+	ParseArgs(argc, argv);
+	ifstream infile(filePathFrom);
 
     string s = "";
     vector<string> genomeVec;
@@ -65,20 +91,42 @@ int main()
         }
     }
 
-    vector<string> kmers = KmerGenerator("ACGT", 5);
 
-    ofstream file;
-    file.open("test_5.csv");
+	vector<string> kmers = KmerGenerator("ACGT", k_kmer);
+	cout << "Kmer generate complete" << endl;
 
-    for (int i = 0; i < genomeVec.size(); i++) {
+
+	int **kmerCountMap = new int*[genomeVec.size()];
+	for (size_t i = 0; i < genomeVec.size(); i++)
+	{
+		kmerCountMap[i] = new int[kmers.size()];
+	}
+
+
+	#pragma omp parallel for
+	for (int i = 0; i < genomeVec.size(); i++) {
         string genomeFrag = genomeVec[i];
-        for (string kmer : kmers) {
-            file << CountSubstring(genomeFrag, kmer) << " ";
+
+		for (int j = 0; j < kmers.size(); j++) {
+			string kmer = kmers[j];
+			kmerCountMap[i][j] = CountSubstring(genomeFrag, kmer);
         }
-        file << endl;
-        cout << i << endl;
     }
+
+
+	ofstream file;
+	file.open(filePathTo);
+	for (int i = 0; i < genomeVec.size(); i++) {
+		for (int j = 0; j < kmers.size(); j++) {
+			file << kmerCountMap[i][j] << " ";
+		}
+		file << endl;
+	}
+
+
     file.close();
+	cout << "finish" << endl;
+	getchar();
 
     return 0;
 }
