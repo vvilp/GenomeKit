@@ -15,6 +15,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(SequenceGenerator SequenceGenerator.cpp)
 add_executable(SequenceGenerator ${SequenceGenerator})
 
+#APP semantic statistics
+set(SemanticStat SemanticStat.cpp)
+add_executable(SemanticsStat ${SemanticStat})
+
 set(SOURCE_FILES main.cpp)
 add_executable(GenomeKit ${SOURCE_FILES})
 
