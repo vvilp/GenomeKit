@@ -1,7 +1,3 @@
-//
-// Created by vvilp on 2/07/2015.
-//
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -39,7 +35,7 @@ void ParseArgs(int argc, char *argv[]) {
     }
 }
 
-int GenerateKmer(int argc, char *argv[]) {
+int CountKmer(int argc, char *argv[]) {
     ParseArgs(argc, argv);
     ifstream infile(filePathFrom);
 
@@ -68,7 +64,7 @@ int GenerateKmer(int argc, char *argv[]) {
     }
 
 
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int i = 0; i < genomeVec.size(); i++) {
         string genomeFrag = genomeVec[i];
 
@@ -103,43 +99,87 @@ struct CompareTester {
     }
 };
 
+void KmerPairOccurrence(const vector<string> &kmers, int **kmerCountMap, int row, int col) {
 
-int main(int argc, char *argv[]) {
-    vector<string> kmers = KmerGenerator("ACGT", 5);
-    ifstream infile("/Volumes/Macintosh\ HD\ New/Project/GenomeKit/bin/test-k5.csv");
-    vector<vector<pair<string, int>>> kmerCountVector;
-    CompareTester compareTester;
+    priority_queue<pair<int, pair<int, int>>> pq;
 
-    for (string line; getline(infile, line);) {
-        istringstream iss(line);
-        vector<int> tokens;
-        copy(istream_iterator<int>(iss),
-             istream_iterator<int>(),
-             back_inserter(tokens));
+    #pragma omp parallel for
+    for (int i = 0; i < col; i++) {
+        for (int j = i + 1; j < col; j++) {
+            int count = 0;
+            for (int lineIndex = 0; lineIndex < row; lineIndex++) {
+                if (kmerCountMap[lineIndex][i] > 5 && kmerCountMap[lineIndex][j] > 5) {
+                    count++;
+                }
+            }
+            pair<int, pair<int, int>> OccurencePair(count, pair<int,int>(i,j));
+            pq.push(OccurencePair);
+            if(pq.size() % 1000000 == 0) {
+                cout << "Current Q size:" << pq.size() << endl;
+            }
 
-        vector<pair<string, int>> vp;
-
-        for (int i = 0; i < tokens.size(); ++i) {
-            pair<string, int> p;
-            p.first = kmers[i];
-            p.second = tokens[i];
-            vp.push_back(p);
         }
-
-        sort(vp.begin(), vp.end(), compareTester);
-
-        kmerCountVector.push_back(vp);
     }
 
-	for (int i = 0; i < kmerCountVector.size() && i < 1; ++i) {
-		for (int j = 0; j < kmerCountVector[i].size(); ++j) {
-			cout << kmerCountVector[i][j].first << " : " << kmerCountVector[i][j].second << endl;
-		}
-		cout << endl;
-	}
+    ofstream ofile("7merPairOccurrence.txt");
+    for (int i = 0; i < 20; ++i) {
+    	int value = pq.top().first;
+        pair<int,int> indexPair = pq.top().second;
+        cout << value << " | kmer1: " << indexPair.first << " " << kmers[indexPair.first] <<
+                " | kmer2: " << indexPair.second << " " << kmers[indexPair.second] <<endl;
+        ofile << kmers[indexPair.first] << "," << kmers[indexPair.second] << "\t" << value << endl;
+    	pq.pop();
+    }
+    ofile.close();
+
+}
+
+int main(int argc, char *argv[]) {
+    vector<string> kmers = KmerGenerator("ACGT", 7);
+    ifstream infile("test-k7.csv");
+    int row, col;
+    infile >> row >> col;
+
+    int **kmerCountMap = new int *[row];
+    int *sumCount = new int[col];
+    memset(sumCount, 0, sizeof(int) * col);
+    for (size_t i = 0; i < row; i++) {
+        kmerCountMap[i] = new int[col];
+        for (size_t j = 0; j < col; j++) {
+            infile >> kmerCountMap[i][j];
+            sumCount[j] += kmerCountMap[i][j];
+        }
+    }
+
+    cout << "Read File Finish" << endl;
+
+    KmerPairOccurrence(kmers, kmerCountMap, row, col);
+
+    // kmer-count-top50
+
+//    priority_queue<pair<int, int>> pq;
+//
+//    for (size_t i = 0; i < col; i++)
+//    {
+//    	pq.push(pair<double, int>(sumCount[i], i));
+//    	//cout << sumCount[i] << endl;
+//    }
+//
+//    ofstream ofile("kmer-count-top50.txt");
+//
+//    for (int i = 0; i < 50; ++i) {
+//    	int index = pq.top().second;
+//    	int value = pq.top().first;
+//    	std::cout << "index: " << index << " | kmer:" << kmers [index] << " | Sum: " << value << std::endl;
+//    	ofile << kmers[index] << "\t" << value << endl;
+//    	pq.pop();
+//    }
+//
+//    ofile.close();
+
+
 
     cout << "Finish" << endl;
-    //getchar();
-
+    getchar();
     return 0;
 }

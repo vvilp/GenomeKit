@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <omp.h>
+#include "Util.h"
 using namespace std;
 
 class Bit {
@@ -208,65 +209,8 @@ void TestCase3()
 
 int main()
 {
-    TestCase1();
+    //TestCase1();
     //getchar();
+    CombinationGenerator(4,100);
     return 0;
 }
-
-//------------------------------------------------
-// signatureLength = 32 64 128 256 512 1024
-// kmerSize =
-//vector<uint32_t> GetSignatureTest(const char *s, int signatureLength)
-//{
-//    vector<uint32_t> res;
-//    int kmerSize = 4;
-//    int *sigTable = new int[signatureLength];
-//    memset(sigTable, 0, baseSigSize * sizeof(*sigTable));
-//
-//    int sigRow = strlen(s) / kmerSize;
-//    int sigCol = signatureLength / baseSigSize;
-//    uint32_t **kmerSigMap = new uint32_t*[sigRow];
-//    for (size_t i = 0; i < sigRow; i++)
-//    {
-//        kmerSigMap[i] = new uint32_t[sigCol];
-//    }
-//
-//    for (int i = 0; i < strlen(s) - kmerSize; i++)
-//    {
-//        for (int j = 0; j < sigCol; j++)
-//        {
-//            int index = i * sigCol + j;
-//            if (index >= strlen(s) - kmerSize) {
-//                break;
-//            }
-//            kmerSigMap[i][j] = Hash::FNV32(s + index, kmerSize);
-//        }
-//    }
-//
-//    for (int i = 0; i < sigRow; i++)
-//    {
-//        for (int j = 0; j < sigCol; j++)
-//        {
-//            uint32_t kmerSig = kmerSigMap[i][j];
-//            for (int k = 0; k < baseSigSize; k++)
-//            {
-//                sigTable[baseSigSize * (j + 1) - 1 - k] += (kmerSig & 1) ? 1 : -1;
-//                kmerSig = kmerSig >> 1;
-//            }
-//        }
-//    }
-//
-//    for (int i = 0; i < signatureLength; i++)
-//    {
-//        cout << ((sigTable[i] > 0) ? sigTable[i] : sigTable[i]) << " ";
-//    }
-//    cout << endl;
-//    //delete
-//    delete[] sigTable;
-//    for (size_t i = 0; i < strlen(s) / kmerSize; i++)
-//    {
-//        delete [] kmerSigMap[i];
-//    }
-//    delete[] kmerSigMap;
-//    return res;
-//}

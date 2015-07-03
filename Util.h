@@ -26,6 +26,7 @@ int CountSubstring(const std::string& str, const std::string& sub)
     return count;
 }
 
+
 void SearchKmer(int k, const string& letters, string & kmer, vector<string> & kmers)
 {
     if (k == 0)
@@ -48,6 +49,37 @@ vector<string> KmerGenerator(const string& letters, int k)
     string s = "";
     SearchKmer(k,letters, s, kmers);
     return kmers;
+}
+
+
+//
+void searchCombination(int dep, int k, int n, vector<int> &combination, vector<vector<int>> & combinations)
+{
+    if(combination.size() == k) {
+        combinations.push_back(combination);
+        return;
+    }
+
+    for (int i = dep; i < n; ++i) {
+        combination.push_back(i);
+        searchCombination(i+1, k, n, combination, combinations);
+        combination.pop_back();
+    }
+}
+void CombinationGenerator(int k, int n)
+{
+    vector<int> combination;
+    vector<vector<int>> combinations;
+    searchCombination(0, k, n, combination, combinations);
+
+//    for (int i = 0; i < combinations.size(); ++i) {
+//        for (int j = 0; j < combinations[i].size(); ++j) {
+//            cout << combinations[i][j] << " ";
+//        }
+//        cout << endl;
+//    }
+
+    cout << combinations.size();
 }
 
 #endif //GENOMEKIT_UTIL_H
