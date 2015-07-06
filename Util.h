@@ -14,6 +14,23 @@
 #include <omp.h>
 using namespace std;
 
+struct ComparatorStringInt {
+    bool operator()(std::pair<std::string, int> const &lhs, std::pair<std::string, int> const &rhs) const {
+        return lhs.second > rhs.second;
+    }
+};
+
+bool IsFileExist (const std::string& name) {
+    ifstream f(name.c_str());
+    if (f.good()) {
+        f.close();
+        return true;
+    } else {
+        f.close();
+        return false;
+    }
+}
+
 int CountSubstring(const std::string& str, const std::string& sub)
 {
     if (sub.length() == 0) return 0;

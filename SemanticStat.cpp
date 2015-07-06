@@ -7,40 +7,53 @@
 #include <sstream>
 #include <queue>
 #include <omp.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 #include "Util.h"
 
 using namespace std;
 
 
-string filePathFrom;
-string filePathTo;
+string orginalFASTAPath;
 int k_kmer;
+
+string outNameKmerCountMap;
+string outNameTopKmerCount;
+string outNameTopPair;
+
+const int _5merCountThreshold = 50;
+const int _7merCountThreshold = 5;
+
+enum ProcessState {
+    KMER_BEGIN,
+    KMER_TABLE,
+    KMER_TOP_PAIR_COUNT,
+    ERROR,
+    COMPLETE
+};
+
+void KmerTopCount(const vector<string> &kmers, int col, const int *sumCount);
 
 void ParseArgs(int argc, char *argv[]) {
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-i")) {
-            filePathFrom = argv[++i];
-            cout << "Generate From: " << filePathFrom << endl;
-        }
-
-        if (!strcmp(argv[i], "-o")) {
-            filePathTo = argv[++i];
-            cout << "output file path: " << filePathTo << endl;
+            orginalFASTAPath = string(argv[++i]);
         }
 
         if (!strcmp(argv[i], "-k")) {
             k_kmer = atoi(argv[++i]);
-            cout << "k: " << k_kmer << endl;
         }
     }
 }
 
-int CountKmer(int argc, char *argv[]) {
-    ParseArgs(argc, argv);
-    ifstream infile(filePathFrom);
-
+void KmerCountMap() {
+    cout << "-> Kmer Count Map start" << endl;
+    ifstream infile(orginalFASTAPath);
     string s = "";
     vector<string> genomeVec;
+
+    //Split genome to multilines
     int i = 0;
     for (string line; getline(infile, line); i++) {
         if (i == 0) continue;
@@ -55,7 +68,7 @@ int CountKmer(int argc, char *argv[]) {
 
 
     vector<string> kmers = KmerGenerator("ACGT", k_kmer);
-    cout << "Kmer generate complete" << endl;
+    cout << "->-> Kmer generate complete" << endl;
 
 
     int **kmerCountMap = new int *[genomeVec.size()];
@@ -76,7 +89,8 @@ int CountKmer(int argc, char *argv[]) {
 
 
     ofstream file;
-    file.open(filePathTo);
+    file.open(outNameKmerCountMap);
+    file << genomeVec.size() << " " << kmers.size() << endl;
     for (int i = 0; i < genomeVec.size(); i++) {
         for (int j = 0; j < kmers.size(); j++) {
             file << kmerCountMap[i][j] << " ";
@@ -86,57 +100,79 @@ int CountKmer(int argc, char *argv[]) {
 
 
     file.close();
-    cout << "finish" << endl;
-    getchar();
 
-    return 0;
+    for (size_t i = 0; i < genomeVec.size(); i++) {
+        delete[] kmerCountMap[i];
+    }
+    delete[] kmerCountMap;
+
+    cout << "-> Kmer Count Map complete" << endl;
 }
 
+void KmerTopCount(const vector<string> &kmers, int *sumCount) {
+    priority_queue<pair<int, int>> pq;
 
-struct CompareTester {
-    bool operator()(std::pair<std::string, int> const &lhs, std::pair<std::string, int> const &rhs) const {
-        return lhs.second > rhs.second;
+    for (size_t i = 0; i < kmers.size(); i++)
+    {
+        pq.push(pair<int, int>(sumCount[i], i));
     }
-};
+
+    ofstream ofile(outNameTopKmerCount);
+
+    for (int i = 0; i < 50; ++i) {
+        int index = pq.top().second;
+        int value = pq.top().first;
+        cout << "index: " << index << " | kmer:" << kmers [index] << " | Sum: " << value << endl;
+        ofile << kmers[index] << "\t" << value << endl;
+        pq.pop();
+    }
+
+    ofile.close();
+}
+
 
 void KmerPairOccurrence(const vector<string> &kmers, int **kmerCountMap, int row, int col) {
 
     priority_queue<pair<int, pair<int, int>>> pq;
-
-    #pragma omp parallel for
+    int kmerCountThreshhold = k_kmer == 5 ? _5merCountThreshold : _7merCountThreshold;
+#pragma omp parallel for
     for (int i = 0; i < col; i++) {
         for (int j = i + 1; j < col; j++) {
             int count = 0;
             for (int lineIndex = 0; lineIndex < row; lineIndex++) {
-                if (kmerCountMap[lineIndex][i] > 5 && kmerCountMap[lineIndex][j] > 5) {
+                if (kmerCountMap[lineIndex][i] > kmerCountThreshhold && kmerCountMap[lineIndex][j] > kmerCountThreshhold) {
                     count++;
                 }
             }
-            pair<int, pair<int, int>> OccurencePair(count, pair<int,int>(i,j));
+            pair<int, pair<int, int>> OccurencePair(count, pair<int, int>(i, j));
             pq.push(OccurencePair);
-            if(pq.size() % 1000000 == 0) {
+            if (pq.size() % 1000000 == 0) {
                 cout << "Current Q size:" << pq.size() << endl;
             }
 
         }
     }
 
-    ofstream ofile("7merPairOccurrence.txt");
-    for (int i = 0; i < 20; ++i) {
-    	int value = pq.top().first;
-        pair<int,int> indexPair = pq.top().second;
+    ofstream ofile(outNameTopPair);
+    for (int i = 0; i < 50; ++i) {
+        int value = pq.top().first;
+        pair<int, int> indexPair = pq.top().second;
         cout << value << " | kmer1: " << indexPair.first << " " << kmers[indexPair.first] <<
-                " | kmer2: " << indexPair.second << " " << kmers[indexPair.second] <<endl;
+        " | kmer2: " << indexPair.second << " " << kmers[indexPair.second] << endl;
         ofile << kmers[indexPair.first] << "," << kmers[indexPair.second] << "\t" << value << endl;
-    	pq.pop();
+        pq.pop();
     }
     ofile.close();
 
 }
 
-int main(int argc, char *argv[]) {
-    vector<string> kmers = KmerGenerator("ACGT", 7);
-    ifstream infile("test-k7.csv");
+
+void KmerTopPairCount()
+{
+    cout << "-> KmerTopPairCount Start" << endl;
+
+    vector<string> kmers = KmerGenerator("ACGT", k_kmer);
+    ifstream infile(outNameKmerCountMap);
     int row, col;
     infile >> row >> col;
 
@@ -151,35 +187,65 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    cout << "Read File Finish" << endl;
-
+   KmerTopCount(kmers, sumCount);
+    cout << "->-> KmerTopCount Finish" << endl;
     KmerPairOccurrence(kmers, kmerCountMap, row, col);
+    cout << "->-> KmerPairOccurence Finish" << endl;
 
-    // kmer-count-top50
+    cout << "-> KmerTopPairCount Complete" << endl;
+}
 
-//    priority_queue<pair<int, int>> pq;
-//
-//    for (size_t i = 0; i < col; i++)
-//    {
-//    	pq.push(pair<double, int>(sumCount[i], i));
-//    	//cout << sumCount[i] << endl;
-//    }
-//
-//    ofstream ofile("kmer-count-top50.txt");
-//
-//    for (int i = 0; i < 50; ++i) {
-//    	int index = pq.top().second;
-//    	int value = pq.top().first;
-//    	std::cout << "index: " << index << " | kmer:" << kmers [index] << " | Sum: " << value << std::endl;
-//    	ofile << kmers[index] << "\t" << value << endl;
-//    	pq.pop();
-//    }
-//
-//    ofile.close();
+ProcessState FileNameProcess()
+{
+    cout << "-> File Name Process" << endl;
+    if(!IsFileExist(orginalFASTAPath)) {
+        return ProcessState::ERROR;
+    }
+    int findIndex = orginalFASTAPath.find_last_of("/\\");
+    findIndex = findIndex >= 0 && findIndex < orginalFASTAPath.length() ? findIndex : -1;
+    string fileName = orginalFASTAPath.substr(findIndex+1);
 
+    outNameKmerCountMap = fileName + "_" +to_string(k_kmer) + "merCountMap.out";
+    outNameTopKmerCount = fileName + "_" +to_string(k_kmer) + "merTopKmerCount.out";
+    outNameTopPair = fileName + "_" +to_string(k_kmer) + "merTopPair.out";
 
+    cout << "-> File Name Process complete" << endl;
+    if(IsFileExist(outNameKmerCountMap)) {
+        return ProcessState::KMER_TOP_PAIR_COUNT;
+    }
+
+    return ProcessState::KMER_TABLE;
+}
+
+int main(int argc, char *argv[]) {
+
+    ParseArgs(argc, argv);
+    ProcessState state = ProcessState::KMER_BEGIN;
+
+    while(state != ProcessState::COMPLETE)
+    {
+        switch(state) {
+            case ProcessState::KMER_BEGIN:
+                state = FileNameProcess();
+                break;
+            case ProcessState::KMER_TABLE:
+                KmerCountMap();
+                state = ProcessState::KMER_TOP_PAIR_COUNT;
+                break;
+            case ProcessState::KMER_TOP_PAIR_COUNT:
+                KmerTopPairCount();
+                state = ProcessState::COMPLETE;
+                break;
+            case ProcessState::ERROR:
+                cout << "ERROR" << endl;
+                state = ProcessState::COMPLETE;
+                break;
+            default:
+                break;
+        }
+    }
 
     cout << "Finish" << endl;
-    getchar();
+    //getchar();
     return 0;
 }
