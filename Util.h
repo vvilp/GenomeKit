@@ -11,7 +11,8 @@
 #include <vector>
 #include <algorithm>
 #include <map>
-#include <omp.h>
+#include <random>
+//#include <omp.h>
 using namespace std;
 
 struct ComparatorStringInt {
@@ -19,6 +20,14 @@ struct ComparatorStringInt {
         return lhs.second > rhs.second;
     }
 };
+
+int RandInt(int min, int max)
+{
+    std::random_device seeder;
+    std::mt19937 engine(seeder());
+    std::uniform_int_distribution<int> dist(min, max);
+    return dist(engine);
+}
 
 bool IsFileExist (const std::string& name) {
     ifstream f(name.c_str());
@@ -97,6 +106,20 @@ void CombinationGenerator(int k, int n)
 //    }
 
     cout << combinations.size();
+}
+
+float CosineSimilarity(vector<int>a, vector<int> b)
+{
+    float res = 0.0;
+    float anorm = 0.0;
+    float bnorm = 0.0;
+    for (int i = 0; i < a.size(); ++i) {
+        res += (float)(a[i] * b[i]);
+        anorm += (float)(a[i]*a[i]);
+        bnorm += (float)(b[i]*b[i]);
+    }
+    res = res / (sqrt(anorm) * sqrt(bnorm));
+    return res;
 }
 
 #endif //GENOMEKIT_UTIL_H

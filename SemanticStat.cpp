@@ -112,8 +112,7 @@ void KmerCountMap() {
 void KmerTopCount(const vector<string> &kmers, int *sumCount) {
     priority_queue<pair<int, int>> pq;
 
-    for (size_t i = 0; i < kmers.size(); i++)
-    {
+    for (size_t i = 0; i < kmers.size(); i++) {
         pq.push(pair<int, int>(sumCount[i], i));
     }
 
@@ -122,7 +121,7 @@ void KmerTopCount(const vector<string> &kmers, int *sumCount) {
     for (int i = 0; i < 50; ++i) {
         int index = pq.top().second;
         int value = pq.top().first;
-        cout << "index: " << index << " | kmer:" << kmers [index] << " | Sum: " << value << endl;
+        cout << "index: " << index << " | kmer:" << kmers[index] << " | Sum: " << value << endl;
         ofile << kmers[index] << "\t" << value << endl;
         pq.pop();
     }
@@ -140,7 +139,8 @@ void KmerPairOccurrence(const vector<string> &kmers, int **kmerCountMap, int row
         for (int j = i + 1; j < col; j++) {
             int count = 0;
             for (int lineIndex = 0; lineIndex < row; lineIndex++) {
-                if (kmerCountMap[lineIndex][i] > kmerCountThreshhold && kmerCountMap[lineIndex][j] > kmerCountThreshhold) {
+                if (kmerCountMap[lineIndex][i] > kmerCountThreshhold &&
+                    kmerCountMap[lineIndex][j] > kmerCountThreshhold) {
                     count++;
                 }
             }
@@ -167,8 +167,7 @@ void KmerPairOccurrence(const vector<string> &kmers, int **kmerCountMap, int row
 }
 
 
-void KmerTopPairCount()
-{
+void KmerTopPairCount() {
     cout << "-> KmerTopPairCount Start" << endl;
 
     vector<string> kmers = KmerGenerator("ACGT", k_kmer);
@@ -187,7 +186,7 @@ void KmerTopPairCount()
         }
     }
 
-   KmerTopCount(kmers, sumCount);
+    KmerTopCount(kmers, sumCount);
     cout << "->-> KmerTopCount Finish" << endl;
     KmerPairOccurrence(kmers, kmerCountMap, row, col);
     cout << "->-> KmerPairOccurence Finish" << endl;
@@ -195,22 +194,21 @@ void KmerTopPairCount()
     cout << "-> KmerTopPairCount Complete" << endl;
 }
 
-ProcessState FileNameProcess()
-{
+ProcessState FileNameProcess() {
     cout << "-> File Name Process" << endl;
-    if(!IsFileExist(orginalFASTAPath)) {
+    if (!IsFileExist(orginalFASTAPath)) {
         return ProcessState::ERROR;
     }
     int findIndex = orginalFASTAPath.find_last_of("/\\");
     findIndex = findIndex >= 0 && findIndex < orginalFASTAPath.length() ? findIndex : -1;
-    string fileName = orginalFASTAPath.substr(findIndex+1);
+    string fileName = orginalFASTAPath.substr(findIndex + 1);
 
-    outNameKmerCountMap = fileName + "_" +to_string(k_kmer) + "merCountMap.out";
-    outNameTopKmerCount = fileName + "_" +to_string(k_kmer) + "merTopKmerCount.out";
-    outNameTopPair = fileName + "_" +to_string(k_kmer) + "merTopPair.out";
+    outNameKmerCountMap = fileName + "_" + to_string(k_kmer) + "merCountMap.out";
+    outNameTopKmerCount = fileName + "_" + to_string(k_kmer) + "merTopKmerCount.out";
+    outNameTopPair = fileName + "_" + to_string(k_kmer) + "merTopPair.out";
 
     cout << "-> File Name Process complete" << endl;
-    if(IsFileExist(outNameKmerCountMap)) {
+    if (IsFileExist(outNameKmerCountMap)) {
         return ProcessState::KMER_TOP_PAIR_COUNT;
     }
 
@@ -222,9 +220,8 @@ int main(int argc, char *argv[]) {
     ParseArgs(argc, argv);
     ProcessState state = ProcessState::KMER_BEGIN;
 
-    while(state != ProcessState::COMPLETE)
-    {
-        switch(state) {
+    while (state != ProcessState::COMPLETE) {
+        switch (state) {
             case ProcessState::KMER_BEGIN:
                 state = FileNameProcess();
                 break;
