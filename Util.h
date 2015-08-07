@@ -64,26 +64,7 @@ public:
 
 class UT_GenomeKit
 {
-public:
-  static void SearchKmer(int k, const string& letters, string & kmer, vector<string> & kmers)
-  {
-      if (k == 0) {
-          kmers.push_back(kmer);
-          return;
-      }
-      for (int j = 0; j < letters.size(); j++) {
-          kmer+= letters[j];
-          SearchKmer(k-1, letters, kmer, kmers);
-          kmer = kmer.substr(0, kmer.size()-1);
-      }
-  }
-  static vector<string> KmerGenerator(const string& letters, int k)
-  {
-      vector<string> kmers;
-      string s = "";
-      SearchKmer(k,letters, s, kmers);
-      return kmers;
-  }
+private:
   static void searchCombination(int dep, int k, int n, vector<int> &combination, vector<vector<int>> & combinations)
   {
       if(combination.size() == k) {
@@ -96,6 +77,30 @@ public:
           combination.pop_back();
       }
   }
+
+  static void SearchKmer(int k, const string& letters, string & kmer, vector<string> & kmers)
+  {
+      if (k == 0) {
+          kmers.push_back(kmer);
+          return;
+      }
+      for (int j = 0; j < letters.size(); j++) {
+          kmer+= letters[j];
+          SearchKmer(k-1, letters, kmer, kmers);
+          kmer = kmer.substr(0, kmer.size()-1);
+      }
+  }
+
+public:
+
+  static vector<string> KmerGenerator(const string& letters, int k)
+  {
+      vector<string> kmers;
+      string s = "";
+      SearchKmer(k,letters, s, kmers);
+      return kmers;
+  }
+
   static void CombinationGenerator(int k, int n)
   {
       vector<int> combination;
