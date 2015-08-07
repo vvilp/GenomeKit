@@ -211,6 +211,6 @@ int main()
 {
     //TestCase1();
     //getchar();
-    CombinationGenerator(4,100);
+    //CombinationGenerator(4,100);
     return 0;
 }

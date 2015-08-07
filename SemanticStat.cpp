@@ -67,7 +67,7 @@ void KmerCountMap() {
     }
 
 
-    vector<string> kmers = KmerGenerator("ACGT", k_kmer);
+    vector<string> kmers = UT_GenomeKit::KmerGenerator("ACGT", k_kmer);
     cout << "->-> Kmer generate complete" << endl;
 
 
@@ -83,7 +83,7 @@ void KmerCountMap() {
 
         for (int j = 0; j < kmers.size(); j++) {
             string kmer = kmers[j];
-            kmerCountMap[i][j] = CountSubstring(genomeFrag, kmer);
+            kmerCountMap[i][j] = UT_String::CountSubstring(genomeFrag, kmer);
         }
     }
 
@@ -170,7 +170,7 @@ void KmerPairOccurrence(const vector<string> &kmers, int **kmerCountMap, int row
 void KmerTopPairCount() {
     cout << "-> KmerTopPairCount Start" << endl;
 
-    vector<string> kmers = KmerGenerator("ACGT", k_kmer);
+    vector<string> kmers = UT_GenomeKit::KmerGenerator("ACGT", k_kmer);
     ifstream infile(outNameKmerCountMap);
     int row, col;
     infile >> row >> col;
@@ -196,7 +196,7 @@ void KmerTopPairCount() {
 
 ProcessState FileNameProcess() {
     cout << "-> File Name Process" << endl;
-    if (!IsFileExist(orginalFASTAPath)) {
+    if (!UT_File::IsFileExist(orginalFASTAPath)) {
         return ProcessState::ERROR;
     }
     int findIndex = orginalFASTAPath.find_last_of("/\\");
@@ -208,7 +208,7 @@ ProcessState FileNameProcess() {
     outNameTopPair = fileName + "_" + to_string(k_kmer) + "merTopPair.out";
 
     cout << "-> File Name Process complete" << endl;
-    if (IsFileExist(outNameKmerCountMap)) {
+    if (UT_File::IsFileExist(outNameKmerCountMap)) {
         return ProcessState::KMER_TOP_PAIR_COUNT;
     }
 

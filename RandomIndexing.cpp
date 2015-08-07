@@ -39,7 +39,7 @@ vector<int> GetRandomIndexVector(int size)
     int ternary[3] = {-1, 0 ,1};
 
     for (int i = 0; i < randIndexNum; ++i) {
-        RIndexVector[RandInt(0,size)] = ternary[RandInt(0,2)];
+        RIndexVector[UT_Math::RandInt(0,size)] = ternary[UT_Math::RandInt(0,2)];
     }
 
     return RIndexVector;
@@ -107,7 +107,7 @@ int main()
     for (int k = 0; k < kmerVector.size(); ++k) {
         for (int i = k+1; i < kmerVector.size(); ++i) {
             cout << kmerVector[k] << " - " << kmerVector[i] << " : " <<
-                    CosineSimilarity(contextMapVectors[kmerVector[k]], contextMapVectors[kmerVector[i]]) << endl;
+                    UT_Math::CosineSimilarity(contextMapVectors[kmerVector[k]], contextMapVectors[kmerVector[i]]) << endl;
         }
     }
 

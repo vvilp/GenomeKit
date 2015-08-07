@@ -39,7 +39,7 @@ vector<int> GetRandomIndexVector(int size, float density)
     int ternary[3] = {-1, 0 ,1};
 
     for (int i = 0; i < randIndexNum; ++i) {
-        RIndexVector[RandInt(0,size)] = ternary[RandInt(0,2)];
+        RIndexVector[UT_Math::RandInt(0,size)] = ternary[UT_Math::RandInt(0,2)];
     }
 
     return RIndexVector;
@@ -118,7 +118,7 @@ void GenomeRISig()
                 if((genomeRIs[i][k] == 0 && genomeRIs[j][k]!=0) || (genomeRIs[i][k] != 0 && genomeRIs[j][k]==0))
                     hdis ++;
             }
-            cout << i << "-" << j << " hamming dis: " << hdis << " | cos: " << CosineSimilarity(genomeRIs[i], genomeRIs[j]) << endl;
+            cout << i << "-" << j << " hamming dis: " << hdis << " | cos: " << UT_Math::CosineSimilarity(genomeRIs[i], genomeRIs[j]) << endl;
 
 
         }
