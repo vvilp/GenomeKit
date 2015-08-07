@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <omp.h>
-#include "Util.h"
+#include "Util.hpp"
 using namespace std;
 
 class Bit {

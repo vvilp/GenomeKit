@@ -10,7 +10,7 @@
 #include <map>
 #include <boost/filesystem.hpp>
 
-#include "Util.h"
+#include "Util.hpp"
 
 using namespace std;
 namespace fs = boost::filesystem;

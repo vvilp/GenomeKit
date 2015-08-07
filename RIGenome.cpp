@@ -9,7 +9,7 @@ RIGenome KmerCountFile
 #include <memory>
 #include <string>
 #include <map>
-#include "Util.h"
+#include "Util.hpp"
 #include <boost/filesystem.hpp>
 using namespace std;
 

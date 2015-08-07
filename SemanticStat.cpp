@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-#include "Util.h"
+#include "Util.hpp"
 
 using namespace std;
 
@@ -77,7 +77,7 @@ void KmerCountMap() {
     }
 
 
-#pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < genomeVec.size(); i++) {
         string genomeFrag = genomeVec[i];
 
