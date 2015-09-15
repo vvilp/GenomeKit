@@ -9,6 +9,7 @@ RIGenome KmerCountFile
 #include <memory>
 #include <string>
 #include <map>
+#include <omp.h>
 #include "Util.hpp"
 #include <boost/filesystem.hpp>
 using namespace std;
@@ -136,7 +137,8 @@ bool isFileContainStr(string filePath, string str)
     char *buffer = new char[filesize];
     if (infile.read(buffer, filesize))
     {
-        if(strstr(buffer,str.c_str()) != NULL) {
+        char *p = strstr(buffer,str.c_str());
+        if(p != NULL) {
             isContain = true;
         }
     }
@@ -146,26 +148,46 @@ bool isFileContainStr(string filePath, string str)
     return isContain;
 }
 
+int SearchKmerCount(string filePath, string str)
+{
+    int count = 0;
+    ifstream infile(filePath);
+    infile.seekg(0, std::ios::end);
+    std::streamsize filesize = infile.tellg();
+    infile.seekg(0, std::ios::beg);
+    char *buffer = new char[filesize];
+    if (infile.read(buffer, filesize))
+    {
+        char *p = strstr(buffer,str.c_str());
+        if(p != NULL) {
+            char *pre = p;
+            while(*(pre--) != '>') {}
+            char sint[64];
+            int i = 0;
+            for (char *cp = pre+2 ; cp < p-1 ; cp++, i++) {
+                sint[i] = *cp;
+            }
+            count = atoi(sint);
+        }
+    }
+
+    delete buffer;
+    infile.close();
+    return count;
+}
+
 
 void KmerRISig()
 {
-    int indexSize = 64;
-    int knum = 8;
-    string kmers[] = {
-            "AAAAAAAAAA",
-            "AAAAAAAAAC",
-            "AAAAAAAAAG",
-            "AAAAAAAAAT",
+    int indexSize = 512;
+    vector<string> kmers = UT_GenomeKit::KmerGenerator("ACGT", 6);
+    int knum = kmers.size();
+    cout << "6mer Count : "<< kmers.size() << endl;
 
-            "AAAAAAAACA",
-            "AAAAAAAACG",
-            "AAAAAAAACT",
-            "AAAAAAAACC",
-    };
-
-    vector<string> fileList = GetFileList("kmer_count_10");
+    vector<string> fileList = GetFileList("512_Genome_6mer_Count");
     map<string, vector<int>> genomeRIs;
 
+    ofstream ofile("6mer_RandIndexing_Sig");
     for (int k = 0; k < knum; ++k) {
         vector<int> kmerRI(indexSize);
         for (int i = 0; i < fileList.size(); ++i) {
@@ -173,7 +195,7 @@ void KmerRISig()
                 //cout << fileList[i] << endl;
                 vector<int> genomeRI;
                 if(genomeRIs.find(fileList[i]) == genomeRIs.end()) {
-                    genomeRI = GetRandomIndexVector(indexSize, 0.05);
+                    genomeRI = GetRandomIndexVector(indexSize, 0.1);
                     genomeRIs.insert(std::pair<string, vector<int>>(fileList[i],genomeRI));
                 } else {
                     genomeRI = genomeRIs[fileList[i]];
@@ -185,15 +207,95 @@ void KmerRISig()
             }
         }
 
+        cout << kmers[k] << " ";
         for (int l = 0; l < indexSize; ++l) {
-            cout << (kmerRI[l] == 0 ? 0:1) << " ";
-        } cout << endl;
+            // cout << (kmerRI[l] == 0 ? 0:1) << " ";
+            // ofile << kmerRI[l] << " ";
+            ofile << (kmerRI[l] <= 0 ? 0:1) << " ";
+        }
+        cout << endl;
+        ofile << endl;
+    }
+    ofile.close();
+
+}
+
+void KmerCountSequence()
+{
+    int kmerCount = 500;
+    vector<string> kmers;
+
+    ifstream kmerListFile("kmerList");
+    int i = 0;
+    for (string line; getline(kmerListFile, line) && i < kmerCount; i++) {
+        kmers.push_back(line);
+    }
+    kmerListFile.close();
+
+    ofstream ofile("kmer_count_vector");
+    vector<string> fileList = GetFileList("kmer_count_10");
+    map<string, vector<int>> kmerCountMap;
+
+    //#pragma omp parallel for
+    for (int k = 0; k < kmers.size(); ++k) {
+        vector<int> kmerCountVec;
+        for (int i = 0; i < fileList.size(); ++i) {
+            kmerCountVec.push_back(SearchKmerCount(fileList[i], kmers[k]));
+        }
+        kmerCountMap.insert(std::pair<string, vector<int>>(kmers[k],kmerCountVec));
+        cout << "Complete:" << k << " | " << kmers[k] << endl;
     }
 
+    for(map<string, vector<int>>::iterator it = kmerCountMap.begin(); it != kmerCountMap.end(); it++) {
+        //cout << it->first << endl;
+        //PrintVector(it->second);
+        ofile << it->first << endl;
+        vector<int> kmerCountVec = it->second;
+        for (size_t i = 0; i < kmerCountVec.size(); i++) {
+            ofile << kmerCountVec[i] << " ";
+        }
+        ofile << endl;
+    }
+
+    ofile.close();
+}
+
+void _6merCountSequence()
+{
+    vector<string> kmers = UT_GenomeKit::KmerGenerator("ACGT", 6);
+    cout << "6mer Count : "<< kmers.size() << endl;
+
+    vector<string> fileList = GetFileList("512_Genome_6mer_Count");
+    map<string, vector<int>> kmerCountMap;
+
+    for (int k = 0; k < kmers.size(); ++k) {
+        vector<int> kmerCountVec;
+        for (int i = 0; i < fileList.size(); ++i) {
+            kmerCountVec.push_back(SearchKmerCount(fileList[i], kmers[k]));
+        }
+        kmerCountMap.insert(std::pair<string, vector<int>>(kmers[k],kmerCountVec));
+        cout << "Complete:" << k << " | " << kmers[k] << endl;
+    }
+
+    ofstream ofile("512_6mer_count_vector");
+    for(map<string, vector<int>>::iterator it = kmerCountMap.begin(); it != kmerCountMap.end(); it++) {
+        //cout << it->first << endl;
+        //PrintVector(it->second);
+        ofile << it->first << endl;
+        vector<int> kmerCountVec = it->second;
+        for (size_t i = 0; i < kmerCountVec.size(); i++) {
+            ofile << kmerCountVec[i] << " ";
+        }
+        ofile << endl;
+    }
+
+    ofile.close();
 }
 
 int main(int argc, char *argv[])
 {
     KmerRISig();
+    // KmerCountSequence();
+    // _10merCountSequence();
     return 0;
 }
