@@ -35,7 +35,7 @@ public:
 	float ***WHO;
 	//hidden -> output weight | hlsize * vocabSize
 	//WHO[threadIndex][i][j] weight of ith Hidden unit to jth Output unit
-	
+
 
 	float **hidden; //hidden[threadIndex][hlsize]
 	float **WIHe; //WIHe[threadIndex][hlsize]
@@ -166,7 +166,7 @@ public:
 			}
 			TrainEach(inputWordsIndex, outputIndex, threadIndex);
 			trainingWordCount++;
-			printf("Finish: %.2f%%\n", (float)trainingWordCount / (float)contextsIndexVec.size() * 100.0);
+			printf("\rFinish: %.2f%%", (float)trainingWordCount / (float)contextsIndexVec.size() * 100.0);
 		}
 	}
 
@@ -217,10 +217,8 @@ void ReformatString(string & line)
 	}
 }
 
-void TestSNN() {
+void TestSNN(string path) {
 	srand(time(0));
-
-	string path = "book.txt";
 
 	ifstream infile(path);
 	vector<string> contexts;
@@ -238,8 +236,9 @@ void TestSNN() {
 	snn.Save(path+".rep");
 }
 
-int main() {
-	TestSNN();
-
+int main(int arg, char*argvs[]) {
+	string path(argvs[1]);
+	cout << path << endl;
+	TestSNN(path);
 	getchar();
 }
