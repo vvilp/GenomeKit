@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.spatial import distance
 
-gene_sig_file = "data_trec_eval/gene_sig_output.csv"
-gene_distance_output = "data_trec_eval/distance.csv"
-gene_trect_result_output = "data_trec_eval/trec_result"
+gene_sig_file = "data_trec_eval3/gene_sig_output.csv"
+gene_distance_output = "data_trec_eval3/distance.csv"
+gene_trect_result_output = "data_trec_eval3/trec_result"
 f_gene_sig = open(gene_sig_file, "r")
 
 f_dis_w = open(gene_distance_output, "w")
@@ -43,7 +43,7 @@ for i in range(0, len(key_set)):
     for j in range(i, len(key_set)):
         dis = distance.euclidean(sig_dict[key_set[i]], sig_dict[key_set[j]])
         score = (1.0 / (1 + (dis))) * 1000000
-        if score > 500:
+        if score > 50:
             output(key_set[i], key_set[j], score, f_trec_w)
             if i!=j:
                 output(key_set[j], key_set[i], score, f_trec_w)

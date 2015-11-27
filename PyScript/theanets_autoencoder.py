@@ -25,14 +25,15 @@ def save_data(data, file_path):
     f2.close()
 
 def main():
-    f = open('sig/6mer_RandIndexing_Sig', 'r')
+    f = open('data_trec_eval3/data/kmer_count_vector', 'r')
+    # f = open('data/6mer_count_vector_small', 'r')
     train = [[int(x) for x in line.split()] for line in f]
     train_data = np.array(train)
     print train_data.shape
     # net = theanets.Autoencoder([512, 256, 128, 64, 128, 256, 512])
-    net = theanets.Autoencoder(
-        layers=(512, 1024, 512, ('tied', 1024), ('tied', 512)),
-    )
+    # net = theanets.Autoencoder(
+    #     layers=(512, 1024, 512, ('tied', 1024), ('tied', 512)),
+    # )
 
     # net = theanets.Autoencoder(
     #     layers=(512, 2048 , 512 , ('tied', 2048), ('tied', 512)),
@@ -40,7 +41,14 @@ def main():
     # net = theanets.Autoencoder(
     #     layers=(512, 256, 128, ('tied', 256), ('tied', 512)),
     # )
+
+    net = theanets.Autoencoder(
+        layers=(8189, 10000, 8189, ('tied', 10000), ('tied', 8189)),
+    )
+
     net.train(train_data,
+              patience = 1,
+            #   train_batches = 10,
               input_noise=0.1,
               weight_l2=0.0001,
               algo='rmsprop',

@@ -7,10 +7,12 @@ import re
 import numpy as np
 
 
+k=6
 sig_label_file = "sig/6mer_label"
-sig_file = "sig/6mer_RandIndexing_Sig-autoencoder-1024"
-gene_file = "data_trec_eval/all_dna.fa"
-gene_sig_output = "data_trec_eval/gene_sig_output.csv"
+# sig_label_file = "data_trec_eval3/data/3mer_label"
+sig_file = "data_trec_eval3/data/autoencoder-RIsig-4096"
+gene_file = "data_trec_eval3/all_dna.fa"
+gene_sig_output = "data_trec_eval3/gene_sig_output.csv"
 f_gene = open(gene_file, "r")
 f_w = open(gene_sig_output, "w")
 
@@ -35,10 +37,10 @@ def get_kmer_sig_dict(kmer_lable_path, kmer_sig_path):
     return kmer_sig_dict
 
 kmer_sig_dict = get_kmer_sig_dict(sig_label_file, sig_file)
-def gene_sig(s):
+def gene_sig(s,k):
     sig = np.zeros(kmer_sig_dict[kmer_sig_dict.keys()[0]].shape[0])
-    for i in range(0, len(s) - 5):
-        sig = sig + kmer_sig_dict[s[i:i+6]]
+    for i in range(0, len(s) - k + 1):
+        sig = sig + kmer_sig_dict[s[i:i+k]]
     return sig
 
 
@@ -54,7 +56,7 @@ for each_line in f_gene:
         gene_label = "S" + result[1] +  "/" + result[0].zfill(5)
         print gene_label
     else:
-        sig = gene_sig(each_line)
+        sig = gene_sig(each_line, k)
         save_sig(gene_label, sig, f_w)
 
 # for file in os.listdir(dir_path):

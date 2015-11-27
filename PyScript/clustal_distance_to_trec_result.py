@@ -1,6 +1,7 @@
 import re
-f = open("trec_eval_data/distance_clustalo", "r")
-
+import Queue
+f = open("data_trec_eval3/clustal_distance", "r")
+f_trec_w = open("data_trec_eval3/trec_result_clustal", "w")
 row = int(f.readline().strip())
 
 label_arr = []
@@ -14,6 +15,7 @@ for i in range(0, row):
     label_arr.append(label)
     distance_str_array.append(distance_str.strip())
 
+print "Finish Label processing"
 # print len(label_arr)
 # print len(distance_str_array[0].split())
 '''
@@ -25,19 +27,33 @@ output:
 301	Q0	FR940203-1-00038	326	  1.800881	STANDARD
 301	Q0	FR940203-1-00039	273	  1.870957	STANDARD
 '''
-f_trec_w = open("trec_eval_data/trec_result_clustal", "w")
-for i in range(0, len(distance_str_array)):
-    # print distance_str_array[i]
-    # break;
-    distance_arr = [float(x) for x in distance_str_array[i].split()]
-    for j in range (0, len(distance_arr)):
-        f_trec_w.write(label_arr[i])
-        f_trec_w.write(" Q0 ")
-        f_trec_w.write(label_arr[j])
-        f_trec_w.write(" 0 ")
-        score = 1.0 / (1 + (distance_arr[j]))
-        f_trec_w.write("%.6f" % score)
-        f_trec_w.write(" STANDARD")
-        f_trec_w.write("\n")
 
+for i in range(0, len(distance_str_array)):
+    distance_arr = [float(x) for x in distance_str_array[i].split()]
+
+    q = Queue.PriorityQueue()
+    for j in range (0, len(distance_arr)):
+        score = 1.0 / (1 + (distance_arr[j]))
+        output_str = "%s Q0 %s 0 %.6f STANDARD\n" % (label_arr[i], label_arr[j], score)
+        q.put((-score,output_str))
+
+    #get first 2000 entry
+    for k in range(0,2000):
+        f_trec_w.write(q.get()[1])
+    print i
+
+# for i in range(0, len(distance_str_array)):
+#     # print distance_str_array[i]
+#     # break;
+#     distance_arr = [float(x) for x in distance_str_array[i].split()]
+#     for j in range (0, len(distance_arr)):
+#         f_trec_w.write(label_arr[i])
+#         f_trec_w.write(" Q0 ")
+#         f_trec_w.write(label_arr[j])
+#         f_trec_w.write(" 0 ")
+#         score = 1.0 / (1 + (distance_arr[j]))
+#         f_trec_w.write("%.6f" % score)
+#         f_trec_w.write(" STANDARD")
+#         f_trec_w.write("\n")
+#     print i
 f_trec_w.close()
