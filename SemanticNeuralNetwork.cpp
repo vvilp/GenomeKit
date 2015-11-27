@@ -20,7 +20,7 @@ public:
 	const int hlsize = 200;//hidden layer size
 	const int shiftSize = 5;
 	const float alpha = 0.1;
-	const int threadNum = 20;
+	const int threadNum = 8;
 
 	map<string, pair<int, int>> vocabMap;
 	// vocabulary map, word -> index,count
@@ -43,7 +43,9 @@ public:
 	int trainingWordCount = 0;
 
 	void Init(const vector<string> & contexts) {
+		trainingWordCount = 0;
 		vocabSize = 0;
+
 		for (size_t i = 0; i < contexts.size(); i++) {
 			string word = contexts[i];
 			if (vocabMap.find(word) == vocabMap.end()) {
@@ -78,16 +80,6 @@ public:
 				}
 			}
 		}
-
-		//WHO = new float*[hlsize];
-		//for (size_t i = 0; i < hlsize; i++) {
-		//	WHO[i] = new float[vocabSize];
-		//	for (size_t j = 0; j < vocabSize; j++) {
-		//		WHO[i][j] = UT_Math::RandFloat(-0.05, 0.05);
-		//	}
-		//}
-
-		trainingWordCount = 0;
 
 		hidden = new float*[threadNum];
 		WIHe = new float*[threadNum];
@@ -166,7 +158,8 @@ public:
 			}
 			TrainEach(inputWordsIndex, outputIndex, threadIndex);
 			trainingWordCount++;
-			printf("\rFinish: %.2f%%", (float)trainingWordCount / (float)contextsIndexVec.size() * 100.0);
+			printf("\rProgress: %.2f%%", (float)trainingWordCount / (float)contextsIndexVec.size() * 100.0);
+			fflush(stdout);
 		}
 	}
 
@@ -188,6 +181,7 @@ public:
 	}
 
 	void Save(string path) {
+        cout << "Saving" << endl;
 		ofstream ofile(path);
 		map<string, pair<int, int>>::iterator iter;
 
