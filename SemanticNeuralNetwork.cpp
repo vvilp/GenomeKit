@@ -15,6 +15,15 @@
 using namespace std;
 
 struct VocabNode {
+
+	string word;
+	int index;
+	int count;
+
+	int nodeCode;
+	vector<int> codeArray;
+	VocabNode *parent;
+
     VocabNode(){}
 	VocabNode(string word,int index,int count) {
 		this->word = word;this->index = index;this->count = count;
@@ -30,13 +39,10 @@ struct VocabNode {
 		parent = NULL;
 	}
 
-	string word;
-	int index;
-	int count;
+	VocabNode(const VocabNode& other);
 
-	int nodeCode;
-	vector<int> codeArray;
-	VocabNode *parent;
+	VocabNode& operator= (const VocabNode& other);
+
 };
 
 struct VocabNodeComparator {
@@ -93,6 +99,57 @@ public:
 
 	float **hidden; //hidden[threadIndex][hlsize]
 	float **WIHe; //WIHe[threadIndex][hlsize]
+
+	void CreateHuffmanTree()
+	{
+		cout << "Create Huffman Tree" << endl;
+		map<string, VocabNode*>::iterator iter;
+
+		priority_queue <VocabNode*, vector<VocabNode*>, VocabNodeComparator> pq;
+		for (iter = vocabMap.begin(); iter != vocabMap.end(); iter++) {
+			pq.push(iter->second);
+		}
+
+		while (pq.size() > 1) {
+			VocabNode* leftNode = pq.top();
+			pq.pop();
+			VocabNode* rightNode = pq.top();
+			pq.pop();
+
+			VocabNode* parent = new VocabNode(leftNode -> count + rightNode -> count);
+
+			leftNode -> nodeCode = 1;
+			rightNode -> nodeCode = 0;
+			leftNode -> parent = parent;
+			rightNode -> parent = parent;
+
+			pq.push(parent);
+		}
+
+		for (iter = vocabMap.begin(); iter != vocabMap.end(); iter++) {
+			VocabNode* vn = iter->second;
+			// cout << iter->first << vn->count << "| node code:" ;
+
+			while (vn != NULL) {
+				iter->second -> codeArray.push_back(vn->nodeCode);
+				// cout << vn->nodeCode;
+				vn = vn->parent;
+			}
+
+			// cout << endl;
+		}
+		// cout << " ------------- "<<endl;
+		// for (size_t i = 0; i < vocabVec.size(); i++) {
+		// 	cout << vocabVec[i]->word << " | code";
+		// 	for (size_t j = 0; j < vocabVec[i]->codeArray.size(); j++) {
+		// 		cout << vocabVec[i]->codeArray[j];
+		// 	}
+		// 	cout << endl;
+		// }
+
+		cout << "Create Huffman Tree complete" << endl;
+
+	}
 
     void Init(const vector<string> & sentenceArray) {
 		cout << "start init" << endl;
@@ -192,6 +249,7 @@ public:
 
 				outputJ = UT_Math::sigmoid(outputJ);
 				e = alpha * (target - outputJ) * outputJ * (1 - outputJ);
+				// e = alpha * (1 - target - outputJ);
 
 				// for learning weight of input to hidden
 				for (int i = 0; i < hlsize; i++) {
@@ -250,6 +308,7 @@ public:
 
 	void Train()
 	{
+		cout << "start training" << endl;
 		vector<thread*> threadPool;
 		for (int i = 0; i < threadNum; i++) {
 			thread *t = new thread(&SemanticNeuralNetwork::TrainingThread, this, i);
@@ -283,56 +342,7 @@ public:
 		cout << "Save completed\n" << endl;
 	}
 
-	void CreateHuffmanTree()
-	{
-		cout << "Create Huffman Tree" << endl;
-		map<string, VocabNode*>::iterator iter;
 
-		priority_queue <VocabNode*, vector<VocabNode*>, VocabNodeComparator> pq;
-		for (iter = vocabMap.begin(); iter != vocabMap.end(); iter++) {
-			pq.push(iter->second);
-		}
-
-		while (!pq.empty()) {
-			VocabNode* leftNode = pq.top();
-			pq.pop();
-			VocabNode* rightNode = pq.top();
-			pq.pop();
-
-			VocabNode* parent = new VocabNode(leftNode -> count + rightNode -> count);
-
-			leftNode -> nodeCode = 1;
-			rightNode -> nodeCode = 0;
-			leftNode -> parent = parent;
-			rightNode -> parent = parent;
-
-			pq.push(parent);
-		}
-
-		for (iter = vocabMap.begin(); iter != vocabMap.end(); iter++) {
-			VocabNode* vn = iter->second;
-			// cout << iter->first << vn->count << "| node code:" ;
-
-			while (vn != NULL) {
-				iter->second -> codeArray.push_back(vn->nodeCode);
-				// cout << vn->nodeCode;
-				vn = vn->parent;
-			}
-
-			// cout << endl;
-		}
-		// cout << " ------------- "<<endl;
-		// for (size_t i = 0; i < vocabVec.size(); i++) {
-		// 	cout << vocabVec[i]->word << " | code";
-		// 	for (size_t j = 0; j < vocabVec[i]->codeArray.size(); j++) {
-		// 		cout << vocabVec[i]->codeArray[j];
-		// 	}
-		// 	cout << endl;
-		// }
-
-		cout << "Create Huffman Tree complete" << endl;
-
-	}
 
     void TestVocabMap()
     {
