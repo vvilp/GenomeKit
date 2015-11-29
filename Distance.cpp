@@ -13,27 +13,6 @@
 using namespace std;
 
 
-// void TopClosest(map<string, vector<float>> & wordvecMap, string word)
-// {
-//     priority_queue <pair<float, string>> q;
-//     map<string, vector<float>>::iterator iter;
-//     vector<float> wordVec = wordvecMap[word];
-//     for (iter = wordvecMap.begin(); iter != wordvecMap.end(); iter++) {
-//         if(iter -> first.compare(word) != 0) {
-// //            cout << iter -> first << " : ";
-// //            cout << Cosdist(iter -> second, wordVec) << endl;
-//             q.push(pair<float,string>(UT_Math::CosineSimilarity(iter -> second, wordVec), iter -> first));
-//
-//         }
-//     }
-//
-//     for (int i = 0; i < 20; i++) {
-//         cout << q.top().second << " " << q.top().first << endl;
-//         q.pop();
-//     }
-//
-// }
-
 void TopClosest(map<string, vector<float>> & wordvecMap, string word)
 {
     int count = 20;
