@@ -26,8 +26,8 @@ struct VocabNode {
 
 	VocabNode(){}
 	VocabNode(string word, int index, int count) {
-		this->word = word; 
-		this->index = index; 
+		this->word = word;
+		this->index = index;
 		this->count = count;
 		nodeCode = 0;
 		parent = NULL;
@@ -52,11 +52,11 @@ struct VocabNodeComparator {
 
 class SemanticNeuralNetwork {
 public:
-	const int iter = 30;
-	const int hlsize = 200;//hidden layer size
+	const int iter = 100;
+	const int hlsize = 256;//hidden layer size
 	const int shiftSize = 5;
-	const float alpha = 0.1;
-	const int threadNum = 1;
+	const float alpha = 0.05;
+	const int threadNum = 8;
 
 	map<string, VocabNode*> vocabMap;
 	// vocabulary map, word -> index,count
@@ -90,9 +90,9 @@ public:
 		}
 
 		while (pq.size() > 1) {
-			VocabNode* leftNode = pq.top();
-			pq.pop();
 			VocabNode* rightNode = pq.top();
+			pq.pop();
+			VocabNode* leftNode = pq.top();
 			pq.pop();
 
 			VocabNode* parent = new VocabNode(leftNode->count + rightNode->count);
@@ -200,21 +200,6 @@ public:
 	void TrainEach(int *inputWordsIndex, int inputSize, int outputWordIndex, int threadIndex) {
 		int localIter = iter;
 
-		// for (size_t i = 0; i < vocabVec.size(); i++) {
-		// 	cout << vocabVec[i]->word << " | code";
-		// 	for (size_t j = 0; j < vocabVec[i]->codeArray.size(); j++) {
-		// 		cout << vocabVec[i]->codeArray[j];
-		// 	}
-		// 	cout << endl;
-		// }
-
-		cout << "outputWordIndex: " << outputWordIndex << endl;
-
-		for (int j = 0; j < vocabVec[outputWordIndex]->codeArray.size(); j++) {
-			cout << vocabVec[outputWordIndex]->codeArray[j] << "";
-		}
-		cout << endl;
-
 		while (localIter-- != 0) {
 			memset(hidden[threadIndex], 0, sizeof(hidden[0][0]) * hlsize);
 			memset(WIHe[threadIndex], 0, sizeof(WIHe[0][0]) * hlsize);
@@ -222,13 +207,13 @@ public:
 			// input -> hidden
 			for (int k = 0; k < inputSize; k++) {
 				for (int i = 0; i < hlsize; i++) {
-					hidden[threadIndex][i] = hidden[threadIndex][i] + WIH[inputWordsIndex[k]][i];
+					hidden[threadIndex][i] = hidden[threadIndex][i] + (WIH[inputWordsIndex[k]][i]);
 				}
 			}
 
-			 for (int i = 0; i < hlsize; i++) {
-			 	hidden[threadIndex][i] = hidden[threadIndex][i] / float(inputSize);
-			 }
+            // for (int i = 0; i < hlsize; i++) {
+            //     hidden[threadIndex][i] = hidden[threadIndex][i] / float(inputSize);
+            // }
 
 			for (int j = 0; j < vocabVec[outputWordIndex]->codeArray.size(); j++) {
 				float e = 0;
@@ -240,8 +225,8 @@ public:
 				}
 
 				outputJ = UT_Math::sigmoid(outputJ);
-				//e = alpha * (target - outputJ) * outputJ * (1 - outputJ);
-				e = alpha * (1- target - outputJ);
+				e = alpha * (target - outputJ) * outputJ * (1 - outputJ);
+//				e = alpha * (1- target - outputJ);
 
 				// for learning weight of input to hidden
 				for (int i = 0; i < hlsize; i++) {
@@ -257,7 +242,7 @@ public:
 			//learn weight of input to hidden
 			for (int k = 0; k < inputSize; k++) {
 				for (int i = 0; i < hlsize; i++) {
-					WIH[inputWordsIndex[k]][i] = WIH[inputWordsIndex[k]][i] + WIHe[threadIndex][i];
+					WIH[inputWordsIndex[k]][i] = WIH[inputWordsIndex[k]][i] + (WIHe[threadIndex][i]);
 				}
 			}
 		}
@@ -268,13 +253,22 @@ public:
 		for (int i = 0; i < wordIndexInSentence[sentenceIndex].size(); i++) {
 			int outputIndex = wordIndexInSentence[sentenceIndex][i];
 
+			if (vocabVec[outputIndex]->count < 3) continue;
+
 			int inputArray[100];
 			int inputCount = 0;
 			for (int j = 1; j <= shiftSize; j++) {
-				if (i - j > 0)
-					inputArray[inputCount++] = (wordIndexInSentence[sentenceIndex][i - j]);
-				if (i + j < wordIndexInSentence[sentenceIndex].size())
-					inputArray[inputCount++] = (wordIndexInSentence[sentenceIndex][i + j]);
+				int inputIndex;
+				if (i - j > 0) {
+					inputIndex = wordIndexInSentence[sentenceIndex][i - j];
+					if (vocabVec[inputIndex]->count >= 3) inputArray[inputCount++] = inputIndex;
+				}
+
+				if (i + j < wordIndexInSentence[sentenceIndex].size()) {
+					inputIndex = wordIndexInSentence[sentenceIndex][i + j];
+					if (vocabVec[inputIndex]->count >= 3) inputArray[inputCount++] = inputIndex;
+				}
+
 			}
 
 			TrainEach(inputArray, inputCount, outputIndex, threadIndex);
@@ -334,8 +328,6 @@ public:
 		cout << "Save completed\n" << endl;
 	}
 
-
-
 	void TestVocabMap()
 	{
 
@@ -375,7 +367,6 @@ void TrainData(string path)
 
 	SemanticNeuralNetwork snn;
 	snn.Init(sentenceArray);
-	// snn.TestVocabMap();
 	snn.Train();
 	snn.Save(path + ".rep");
 
