@@ -50,25 +50,6 @@ struct VocabNodeComparator {
         return arg1->count > arg2->count;
     }
 };
-//
-// struct TreeNode {
-// 	TreeNode() {
-// 		sumCount = 0;
-// 		nodeCode = 0;
-// 		vnode = NULL;
-// 		parent = NULL;
-// 	}
-//
-// 	int sumCount;
-// 	int nodeCode;
-// 	VocabNode *vnode;
-// 	TreeNode *parent;
-//
-// 	friend bool operator< (TreeNode n1, TreeNode n2) {
-// 	   return n1.vnode->count > n2.vnode->count;
-// 	}
-// };
-
 
 
 class SemanticNeuralNetwork {
@@ -129,13 +110,12 @@ public:
 		for (iter = vocabMap.begin(); iter != vocabMap.end(); iter++) {
 			VocabNode* vn = iter->second;
 			// cout << iter->first << vn->count << "| node code:" ;
-
-			while (vn != NULL) {
-				iter->second -> codeArray.push_back(vn->nodeCode);
+			while (vn -> parent != NULL) {
+				// iter->second -> codeArray.push_back(vn->nodeCode);
+				iter->second->codeArray.insert(iter->second->codeArray.begin(), vn->nodeCode);
 				// cout << vn->nodeCode;
 				vn = vn->parent;
 			}
-
 			// cout << endl;
 		}
 		// cout << " ------------- "<<endl;
@@ -148,7 +128,6 @@ public:
 		// }
 
 		cout << "Create Huffman Tree complete" << endl;
-
 	}
 
     void Init(const vector<string> & sentenceArray) {
