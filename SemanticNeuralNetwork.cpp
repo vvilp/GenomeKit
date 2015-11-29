@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <map>
 #include <vector>
 #include <random>
@@ -52,11 +52,12 @@ struct VocabNodeComparator {
 
 class SemanticNeuralNetwork {
 public:
-	const int iter = 100;
-	const int hlsize = 256;//hidden layer size
-	const int shiftSize = 5;
-	const float alpha = 0.05;
-	const int threadNum = 8;
+	const int maxIter = 500;
+	const int hlsize = 200;//hidden layer size
+	const int shiftSize = 2;
+	const float alpha = 0.5;
+    const float beta = 0.5;
+	const int threadNum = 6;
 
 	map<string, VocabNode*> vocabMap;
 	// vocabulary map, word -> index,count
@@ -78,6 +79,7 @@ public:
 
 	float **hidden; //hidden[threadIndex][hlsize]
 	float **WIHe; //WIHe[threadIndex][hlsize]
+    float **WIHe_pre; // monument
 
 	void CreateHuffmanTree()
 	{
@@ -116,14 +118,14 @@ public:
 			}
 			// cout << endl;
 		}
-		// cout << " ------------- "<<endl;
-		// for (size_t i = 0; i < vocabVec.size(); i++) {
-		// 	cout << vocabVec[i]->word << " | code";
-		// 	for (size_t j = 0; j < vocabVec[i]->codeArray.size(); j++) {
-		// 		cout << vocabVec[i]->codeArray[j];
-		// 	}
-		// 	cout << endl;
-		// }
+		 cout << " ------------- "<<endl;
+		 for (size_t i = 0; i < vocabVec.size(); i++) {
+		 	cout << vocabVec[i]->word << " count: " <<  vocabVec[i]->count << " Index: " << vocabVec[i]->index <<" | code: ";
+		 	for (size_t j = 0; j < vocabVec[i]->codeArray.size(); j++) {
+		 		cout << vocabVec[i]->codeArray[j];
+		 	}
+		 	cout << endl;
+		 }
 
 		cout << "Create Huffman Tree complete" << endl;
 	}
@@ -186,9 +188,11 @@ public:
 
 		hidden = new float*[threadNum];
 		WIHe = new float*[threadNum];
+        WIHe_pre = new float*[threadNum];
 		for (int i = 0; i < threadNum; i++) {
 			hidden[i] = new float[hlsize];
 			WIHe[i] = new float[hlsize];
+            WIHe_pre[i] = new float[hlsize];
 		}
 
 		cout << "Init Complete" << endl;
@@ -198,9 +202,12 @@ public:
 	}
 
 	void TrainEach(int *inputWordsIndex, int inputSize, int outputWordIndex, int threadIndex) {
-		int localIter = iter;
+        int iterCount = 0;
+        memset(WIHe_pre[threadIndex], 0, sizeof(WIHe_pre[0][0]) * hlsize);
+        int outputLayerSize = vocabVec[outputWordIndex]->codeArray.size();
 
-		while (localIter-- != 0) {
+        while (1) {
+            iterCount++;
 			memset(hidden[threadIndex], 0, sizeof(hidden[0][0]) * hlsize);
 			memset(WIHe[threadIndex], 0, sizeof(WIHe[0][0]) * hlsize);
 
@@ -210,12 +217,14 @@ public:
 					hidden[threadIndex][i] = hidden[threadIndex][i] + (WIH[inputWordsIndex[k]][i]);
 				}
 			}
+            
+            for (int i = 0; i < hlsize; i++) {
+                hidden[threadIndex][i] = hidden[threadIndex][i] / (float)inputSize;
+            }
 
-            // for (int i = 0; i < hlsize; i++) {
-            //     hidden[threadIndex][i] = hidden[threadIndex][i] / float(inputSize);
-            // }
+            float error = 0;
 
-			for (int j = 0; j < vocabVec[outputWordIndex]->codeArray.size(); j++) {
+			for (int j = 0; j < outputLayerSize; j++) {
 				float e = 0;
 				float outputJ = 0;
 				float target = vocabVec[outputWordIndex]->codeArray[j];
@@ -224,9 +233,11 @@ public:
 					outputJ += hidden[threadIndex][i] * WHO[threadIndex][i][j];
 				}
 
+
 				outputJ = UT_Math::sigmoid(outputJ);
 				e = alpha * (target - outputJ) * outputJ * (1 - outputJ);
 //				e = alpha * (1- target - outputJ);
+                error = error + abs((target - outputJ));
 
 				// for learning weight of input to hidden
 				for (int i = 0; i < hlsize; i++) {
@@ -239,12 +250,19 @@ public:
 				}
 			}
 
+
 			//learn weight of input to hidden
 			for (int k = 0; k < inputSize; k++) {
 				for (int i = 0; i < hlsize; i++) {
-					WIH[inputWordsIndex[k]][i] = WIH[inputWordsIndex[k]][i] + (WIHe[threadIndex][i]);
+					WIH[inputWordsIndex[k]][i] = WIH[inputWordsIndex[k]][i] + (WIHe[threadIndex][i]) + beta * (WIHe_pre[threadIndex][i]);
+                    WIHe_pre[threadIndex][i] = WIHe[threadIndex][i];
 				}
 			}
+
+            if((error / (outputLayerSize)) < 0.005 || iterCount > maxIter) {
+//                cout<< "iter count: " << iterCount << endl;
+                break;
+            }
 		}
 	}
 
@@ -253,11 +271,13 @@ public:
 		for (int i = 0; i < wordIndexInSentence[sentenceIndex].size(); i++) {
 			int outputIndex = wordIndexInSentence[sentenceIndex][i];
 
+			//escape from not rare words
 			if (vocabVec[outputIndex]->count < 3) continue;
 
 			int inputArray[100];
 			int inputCount = 0;
-			for (int j = 1; j <= shiftSize; j++) {
+            
+			for (int j = 1; ; j++) {
 				int inputIndex;
 				if (i - j > 0) {
 					inputIndex = wordIndexInSentence[sentenceIndex][i - j];
@@ -268,8 +288,14 @@ public:
 					inputIndex = wordIndexInSentence[sentenceIndex][i + j];
 					if (vocabVec[inputIndex]->count >= 3) inputArray[inputCount++] = inputIndex;
 				}
+                
+                if (inputCount == shiftSize * 2 || !(i - j > 0 && i + j < wordIndexInSentence[sentenceIndex].size())) {
+                    break;
+                }
 
 			}
+
+            if(inputCount == 0) continue;
 
 			TrainEach(inputArray, inputCount, outputIndex, threadIndex);
 			trainingWordCount++;
@@ -374,6 +400,7 @@ void TrainData(string path)
 
 
 int main(int arg, char*argvs[]) {
+    srand(time(0));
 	string path(argvs[1]);
 	cout << path << endl;
 	TrainData(path);
