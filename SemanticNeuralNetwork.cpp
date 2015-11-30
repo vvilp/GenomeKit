@@ -52,8 +52,8 @@ class SemanticNeuralNetwork {
 	const int hlsize = 256;  // hidden layer size
 	const int shiftSize = 5;
 	const int threadNum = 30;
-	const float alpha = 0.05;
-	const float beta = 0.05;  // for monument
+	const float alpha = 0.01;
+	const float beta = 0.01;  // for monument
 
 	int vocabSize = 0;
 	int wordCount = 0;
@@ -264,10 +264,15 @@ class SemanticNeuralNetwork {
 			// escape from rare words
 			if (vocabVec[outputIndex]->count < 2) continue;
 
-			int inputArray[100];
+			int inputArray[20];
 			int inputCount = 0;
 
 			for (int j = 1;; j++) {
+
+                if (inputCount >= shiftSize * 2 || !(i - j > 0 && i + j < wordIndexInSentence[sentenceIndex].size())) {
+                    break;
+                }
+
 				int inputIndex;
 				if (i - j > 0) {
 					inputIndex = wordIndexInSentence[sentenceIndex][i - j];
@@ -277,10 +282,6 @@ class SemanticNeuralNetwork {
 				if (i + j < wordIndexInSentence[sentenceIndex].size()) {
 					inputIndex = wordIndexInSentence[sentenceIndex][i + j];
 					if (vocabVec[inputIndex]->count >= 2) inputArray[inputCount++] = inputIndex;
-				}
-
-				if (inputCount == shiftSize * 2 || !(i - j > 0 && i + j < wordIndexInSentence[sentenceIndex].size())) {
-					break;
 				}
 			}
 
@@ -369,6 +370,9 @@ void TrainData(string path) {
 	transform(wholeContent.begin(), wholeContent.end(), wholeContent.begin(), ::tolower);
 
 	for (int i = 0; i < wholeContent.size(); i++) {
+		if (wholeContent[i] == '\n' || wholeContent[i] == ',') {
+			wholeContent[i] = ' ';
+		}
 		if (IsBreakChar(wholeContent[i])) {
 			wholeContent[i] = '.';
 		}
@@ -377,6 +381,8 @@ void TrainData(string path) {
 	vector<string> sentenceArray;
 	UT_String::split(wholeContent, ".", sentenceArray);
 
+	// cout << wholeContent << endl;
+	cout << "Sentence count: " << sentenceArray.size() << endl;
 	SemanticNeuralNetwork snn;
 	snn.Init(sentenceArray);
 	snn.Train();
