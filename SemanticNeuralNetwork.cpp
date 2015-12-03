@@ -44,7 +44,7 @@ struct VocabNodeComparator {
 
 class SemanticNeuralNetwork {
        public:
-	const int maxInnerIter = 3;
+	const int maxInnerIter = 2;
 	const int maxIteration = 50;
 	const int hlsize = 256;  // hidden layer size
 	const int shiftSize = 5;
@@ -232,9 +232,9 @@ class SemanticNeuralNetwork {
 			int inputArray[20];
 			int inputCount = 0;
 			for (int j = 1;; j++) {
-                if (inputCount >= shiftSize * 2 || !(i - j > 0 && i + j < wordIndexInSentence[sentenceIndex].size())) {
-                    break;
-                }
+				if (inputCount >= shiftSize * 2 || !(i - j > 0 && i + j < wordIndexInSentence[sentenceIndex].size())) {
+					break;
+				}
 				int inputIndex;
 				if (i - j > 0) {
 					inputIndex = wordIndexInSentence[sentenceIndex][i - j];
@@ -328,7 +328,20 @@ void TrainData(string path) {
 	}
 	vector<string> sentenceArray;
 	UT_String::split(wholeContent, ".", sentenceArray);
+
+	// // temp
+	// if (sentenceArray.size() == 1) {
+	// 	sentenceArray.clear();
+	// 	for (int i = 5000; i < wholeContent.size(); i += 5000) {
+	// 		size_t index = wholeContent.find(' ', i);
+	// 		if (index == std::string::npos) break;
+	// 		wholeContent[index] = '.';
+	// 	}
+	// 	UT_String::split(wholeContent, ".", sentenceArray);
+	// }
+
 	cout << "Sentence count: " << sentenceArray.size() << endl;
+
 	SemanticNeuralNetwork snn;
 	snn.Init(sentenceArray);
 	snn.Train();
