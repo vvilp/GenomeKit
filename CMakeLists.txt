@@ -38,5 +38,8 @@ set(HEADER_FILES Util.hpp)
 set(SemanticNeuralNetwork SemanticNeuralNetwork.cpp)
 add_executable(SemanticNeuralNetwork ${SemanticNeuralNetwork} ${HEADER_FILES})
 
+set(SemanticNeuralNetwork-kmer SemanticNeuralNetwork-kmer.cpp)
+add_executable(SemanticNeuralNetwork-kmer ${SemanticNeuralNetwork-kmer} ${HEADER_FILES})
+
 set(Distance Distance.cpp)
 add_executable(Distance ${Distance} ${HEADER_FILES})
