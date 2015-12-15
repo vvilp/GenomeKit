@@ -51,9 +51,6 @@ class SemanticNeuralNetwork {
 	const int threadNum = 30;
 	const float alpha = 0.01;
 	const float beta = 0.01;  // for monument
-
-	const int kmerSize = 6;
-
 	int vocabSize = 0;
 	int wordCount = 0;
 	int trainingWordCount = 0;
@@ -117,60 +114,6 @@ class SemanticNeuralNetwork {
 		cout << "Create Huffman Tree complete" << endl;
 	}
 
-	void InitArray(int vocabSize) {
-		WIH = new float *[vocabSize];
-		for (size_t i = 0; i < vocabSize; i++) {
-			WIH[i] = new float[hlsize];
-			for (size_t j = 0; j < hlsize; j++) {
-				WIH[i][j] = UT_Math::RandFloat(-0.05, 0.05);
-			}
-		}
-		WHO = new float **[threadNum];
-		for (int tindex = 0; tindex < threadNum; tindex++) {
-			WHO[tindex] = new float *[hlsize];
-			for (size_t i = 0; i < hlsize; i++) {
-				WHO[tindex][i] = new float[vocabSize];
-				for (size_t j = 0; j < vocabSize; j++) {
-					WHO[tindex][i][j] = UT_Math::RandFloat(-0.05, 0.05);
-				}
-			}
-		}
-		hidden = new float *[threadNum];
-		WIHe = new float *[threadNum];
-		WIHe_pre = new float *[threadNum];
-		for (int i = 0; i < threadNum; i++) {
-			hidden[i] = new float[hlsize];
-			WIHe[i] = new float[hlsize];
-			WIHe_pre[i] = new float[hlsize];
-		}
-	}
-
-	void Init(const vector<vector<string>> wordsSentences) {
-		cout << "start init" << endl;
-		for (int i = 0; i < wordsSentences.size(); i++) {
-			vector<int> wordIndexArray;
-			for (int j = 0; j < wordsSentences[i].size(); j++) {
-				string word = wordsSentences[i][j];
-				if (vocabMap.find(word) == vocabMap.end()) {
-					VocabNode *vn = new VocabNode(word, vocabSize, 1);
-					vocabMap[word] = vn;
-					vocabVec.push_back(vn);
-					vocabSize++;
-				} else {
-					vocabMap[word]->count++;
-				}
-				wordCount++;
-				wordIndexArray.push_back(vocabMap[word]->index);
-			}
-			wordIndexInSentence.push_back(wordIndexArray);
-		}
-		CreateHuffmanTree();
-		InitArray(vocabSize);
-		cout << "Init Complete" << endl;
-		cout << "Vocab count:" << vocabSize << endl;
-		cout << "Word count:" << wordCount << endl;
-	}
-
 	void Init(const vector<string> &sentenceArray) {
 		cout << "start init" << endl;
 		trainingWordCount = 0;
@@ -200,7 +143,31 @@ class SemanticNeuralNetwork {
 			wordIndexInSentence.push_back(wordIndexArray);
 		}
 		CreateHuffmanTree();
-		InitArray(vocabSize);
+		WIH = new float *[vocabSize];
+		for (size_t i = 0; i < vocabSize; i++) {
+			WIH[i] = new float[hlsize];
+			for (size_t j = 0; j < hlsize; j++) {
+				WIH[i][j] = UT_Math::RandFloat(-0.05, 0.05);
+			}
+		}
+		WHO = new float **[threadNum];
+		for (int tindex = 0; tindex < threadNum; tindex++) {
+			WHO[tindex] = new float *[hlsize];
+			for (size_t i = 0; i < hlsize; i++) {
+				WHO[tindex][i] = new float[vocabSize];
+				for (size_t j = 0; j < vocabSize; j++) {
+					WHO[tindex][i][j] = UT_Math::RandFloat(-0.05, 0.05);
+				}
+			}
+		}
+		hidden = new float *[threadNum];
+		WIHe = new float *[threadNum];
+		WIHe_pre = new float *[threadNum];
+		for (int i = 0; i < threadNum; i++) {
+			hidden[i] = new float[hlsize];
+			WIHe[i] = new float[hlsize];
+			WIHe_pre[i] = new float[hlsize];
+		}
 		cout << "Init Complete" << endl;
 		cout << "Vocab count:" << vocabSize << endl;
 		cout << "Word count:" << wordCount << endl;
@@ -274,48 +241,11 @@ class SemanticNeuralNetwork {
 				}
 				bool isAdded = false;
 				int inputIndex = 0;
-				if (i - j > 0) {
-					inputIndex = wordIndexInSentence[sentenceIndex][i - j];
-					inputArray[inputCount++] = inputIndex;
-					isAdded = true;
-				}
-				if (i + j < wordIndexInSentence[sentenceIndex].size()) {
-					inputIndex = wordIndexInSentence[sentenceIndex][i + j];
-					inputArray[inputCount++] = inputIndex;
-					isAdded = true;
-				}
-				if (isAdded) {
-					localShift++;
-				}
-			}
-
-			if (inputCount == 0) continue;
-			TrainEach(inputArray, inputCount, outputIndex, threadIndex);
-			trainingWordCount++;
-		}
-	}
-
-	void TrainingSentence_Gene(int sentenceIndex, int threadIndex) {
-		for (int i = 0; i < wordIndexInSentence[sentenceIndex].size(); i++) {
-			int outputIndex = wordIndexInSentence[sentenceIndex][i];
-
-			int inputArray[20];
-			int inputCount = 0;
-			int localShift = 0;
-			for (int j = kmerSize;; j += kmerSize) {  // kmer input not overlap
-				if (inputCount >= shiftSize) {
-					break;
-				}
-				if (i - j < 0 && i + j >= wordIndexInSentence[sentenceIndex].size()) {
-					break;
-				}
-				bool isAdded = false;
-				int inputIndex = 0;
-				if (i - j > 0) {
-					inputIndex = wordIndexInSentence[sentenceIndex][i - j];
-					inputArray[inputCount++] = inputIndex;
-					isAdded = true;
-				}
+				// if (i - j > 0) {
+				// 	inputIndex = wordIndexInSentence[sentenceIndex][i - j];
+				// 	inputArray[inputCount++] = inputIndex;
+				// 	isAdded = true;
+				// }
 				if (i + j < wordIndexInSentence[sentenceIndex].size()) {
 					inputIndex = wordIndexInSentence[sentenceIndex][i + j];
 					inputArray[inputCount++] = inputIndex;
@@ -341,7 +271,7 @@ class SemanticNeuralNetwork {
 		}
 		for (int i = 0; i < maxIteration; i++) {
 			for (int i = beginIndex; i < endIndex; i++) {
-				TrainingSentence_Gene(i, threadIndex);
+				TrainingSentence(i, threadIndex);
 				trainingSentenceCount++;
 				printf("\rProgress: %.3f%%", (float)trainingSentenceCount / (float)wordIndexInSentence.size() / maxIteration * 100.0);
 				fflush(stdout);
@@ -409,17 +339,6 @@ void TrainData(string path) {
 	vector<string> sentenceArray;
 	UT_String::split(wholeContent, ".", sentenceArray);
 
-	// // temp
-	// if (sentenceArray.size() == 1) {
-	// 	sentenceArray.clear();
-	// 	for (int i = 5000; i < wholeContent.size(); i += 5000) {
-	// 		size_t index = wholeContent.find(' ', i);
-	// 		if (index == std::string::npos) break;
-	// 		wholeContent[index] = '.';
-	// 	}
-	// 	UT_String::split(wholeContent, ".", sentenceArray);
-	// }
-
 	cout << "Sentence count: " << sentenceArray.size() << endl;
 
 	SemanticNeuralNetwork snn;
@@ -428,43 +347,9 @@ void TrainData(string path) {
 	snn.Save(path + ".rep");
 }
 
-vector<string> GetKmers(string gene, int kmerSize) {
-	vector<string> kmers;
-	for (size_t i = 0; i < gene.size() - kmerSize + 1; i++) {
-		string kmer = gene.substr(i, kmerSize);
-		kmers.push_back(kmer);
-	}
-	return kmers;
-}
-
-void TrainGenome(string path) {
-	std::ifstream t(path);
-	string line = "";
-
-	vector<vector<string>> kmerGenes;
-	string gene = "";
-	while (getline(t, line)) {
-		if (line[0] == '>') {
-			if (gene != "") {
-				vector<string> kmers = GetKmers(gene, 6);
-				kmerGenes.push_back(kmers);
-				gene = "";
-			}
-		} else {
-			gene.append(line);
-		}
-	}
-
-	cout << "Genes num: " << kmerGenes.size() << endl;
-	SemanticNeuralNetwork snn;
-	snn.Init(kmerGenes);
-	snn.Train();
-	snn.Save(path + ".rep");
-}
-
 int main(int arg, char *argvs[]) {
 	srand(time(0));
 	string path(argvs[1]);
 	cout << path << endl;
-	TrainGenome(path);
+	TrainData(path);
 }
