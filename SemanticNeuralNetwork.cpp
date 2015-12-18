@@ -42,14 +42,10 @@ struct VocabNodeComparator {
 	bool operator()(VocabNode *arg1, VocabNode *arg2) { return arg1->count > arg2->count; }
 };
 
-enum DataType {
-	TEXT,
-	GENOME
-};
+enum DataType { TEXT, GENOME };
 
 class SemanticNeuralNetwork {
-public:
-
+       public:
 	DataType dataType = TEXT;
 
 	const int maxInnerIter = 2;
@@ -80,6 +76,13 @@ public:
 	float **hidden;    // hidden[threadIndex][hlsize]
 	float **WIHe;      // WIHe[threadIndex][hlsize]
 	float **WIHe_pre;  // monument
+
+	void InitGenomeTraining(int kmerSize) {
+		dataType = GENOME;
+		this->kmerSize = kmerSize;
+	}
+
+	void InitTextTraining() { dataType = TEXT; }
 
 	void CreateHuffmanTree() {
 		cout << "Create Huffman Tree" << endl;
@@ -153,11 +156,9 @@ public:
 		}
 	}
 
-	void Init(DataType dataType, const vector<vector<string>> wordsSentences) {
+	void InitTrainingData(const vector<vector<string>> wordsSentences) {
 		cout << "start init" << endl;
-
 		this->dataType = dataType;
-
 		for (int i = 0; i < wordsSentences.size(); i++) {
 			vector<int> wordIndexArray;
 			for (int j = 0; j < wordsSentences[i].size(); j++) {
@@ -183,7 +184,7 @@ public:
 		cout << "sentence|gene count:" << wordIndexInSentence.size() << endl;
 	}
 
-	void Init(DataType dataType, const vector<string> &sentenceArray) {
+	void InitTrainingData(const vector<string> &sentenceArray) {
 		cout << "start init" << endl;
 		this->dataType = dataType;
 		trainingWordCount = 0;
@@ -224,7 +225,6 @@ public:
 		memset(WIHe_pre[threadIndex], 0, sizeof(WIHe_pre[0][0]) * hlsize);
 		int outputLayerSize = vocabVec[outputWordIndex]->codeArray.size();
 		while (1) {
-			iterCount++;
 			memset(hidden[threadIndex], 0, sizeof(hidden[0][0]) * hlsize);
 			memset(WIHe[threadIndex], 0, sizeof(WIHe[0][0]) * hlsize);
 			// input -> hidden
@@ -263,6 +263,7 @@ public:
 					WIHe_pre[threadIndex][i] = WIHe[threadIndex][i];
 				}
 			}
+			iterCount++;
 			if ((error / (outputLayerSize)) < 0.005 || iterCount > maxInnerIter) {
 				// cout<< "iter count: " << iterCount << endl;
 				break;
@@ -287,11 +288,11 @@ public:
 				}
 				bool isAdded = false;
 				int inputIndex = 0;
-				// if (i - j > 0) {
-				// 	inputIndex = wordIndexInSentence[sentenceIndex][i - j];
-				// 	inputArray[inputCount++] = inputIndex;
-				// 	isAdded = true;
-				// }
+				if (i - j > 0) {
+					inputIndex = wordIndexInSentence[sentenceIndex][i - j];
+					inputArray[inputCount++] = inputIndex;
+					isAdded = true;
+				}
 				if (i + j < wordIndexInSentence[sentenceIndex].size()) {
 					inputIndex = wordIndexInSentence[sentenceIndex][i + j];
 					inputArray[inputCount++] = inputIndex;
@@ -315,9 +316,9 @@ public:
 			int inputCount = 0;
 			int localShift = 0;
 			// int localKmerSize = kmerSize;// kmer input not overlap
-			int localKmerSize = 1; // kmer input overlap
+			int localKmerSize = 1;				    // kmer input overlap
 			for (int j = localKmerSize;; j += localKmerSize) {  // kmer input not overlap
-				if (inputCount >= shiftSize) {
+				if (localShift >= shiftSize) {
 					break;
 				}
 				if (i - j < 0 && i + j >= wordIndexInSentence[sentenceIndex].size()) {
@@ -325,11 +326,14 @@ public:
 				}
 				bool isAdded = false;
 				int inputIndex = 0;
+				//left kmer
 				// if (i - j > 0) {
 				// 	inputIndex = wordIndexInSentence[sentenceIndex][i - j];
 				// 	inputArray[inputCount++] = inputIndex;
 				// 	isAdded = true;
 				// }
+
+				//right kmer
 				if (i + j < wordIndexInSentence[sentenceIndex].size()) {
 					inputIndex = wordIndexInSentence[sentenceIndex][i + j];
 					inputArray[inputCount++] = inputIndex;
@@ -355,9 +359,9 @@ public:
 		}
 		for (int i = 0; i < maxIteration; i++) {
 			for (int i = beginIndex; i < endIndex; i++) {
-				if(dataType == TEXT) {
+				if (dataType == TEXT) {
 					TrainingSentence(i, threadIndex);
-				} else if(dataType == GENOME){
+				} else if (dataType == GENOME) {
 					TrainingSentence_Gene(i, threadIndex);
 				}
 				trainingSentenceCount++;
@@ -369,10 +373,10 @@ public:
 
 	void Train() {
 		cout << "start training" << endl;
-		if(dataType == TEXT) {
-			cout << "training Text data" <<endl;
-		} else if(dataType == GENOME){
-			cout << "training Genome data" <<endl;
+		if (dataType == TEXT) {
+			cout << "training Text data" << endl;
+		} else if (dataType == GENOME) {
+			cout << "training Genome data" << endl;
 		}
 		vector<thread *> threadPool;
 		for (int i = 0; i < threadNum; i++) {
@@ -435,7 +439,8 @@ void TrainTextData(string path) {
 	cout << "Sentence count: " << sentenceArray.size() << endl;
 
 	SemanticNeuralNetwork snn;
-	snn.Init(TEXT, sentenceArray);
+	snn.InitTextTraining();
+	snn.InitTrainingData(sentenceArray);
 	snn.Train();
 	snn.Save(path + ".rep");
 }
@@ -471,7 +476,8 @@ void TrainGenome(string path) {
 
 	cout << "Genes num: " << kmerGenes.size() << endl;
 	SemanticNeuralNetwork snn;
-	snn.Init(GENOME, kmerGenes);
+	snn.InitGenomeTraining(kmerSize);
+	snn.InitTrainingData(kmerGenes);
 	snn.Train();
 	snn.Save(path + ".rep");
 }

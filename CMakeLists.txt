@@ -1,6 +1,10 @@
 # cmake_minimum_required(VERSION 3.1)
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/bin")
 
+ADD_DEFINITIONS(
+    -std=c++11 
+)
+
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 set(CMAKE_C_COMPILER "/usr/bin/clang")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -37,9 +41,6 @@ set(HEADER_FILES Util.hpp)
 
 set(SemanticNeuralNetwork SemanticNeuralNetwork.cpp)
 add_executable(SemanticNeuralNetwork ${SemanticNeuralNetwork} ${HEADER_FILES})
-
-set(SemanticNeuralNetwork-kmer SemanticNeuralNetwork-kmer.cpp)
-add_executable(SemanticNeuralNetwork-kmer ${SemanticNeuralNetwork-kmer} ${HEADER_FILES})
 
 set(Distance Distance.cpp)
 add_executable(Distance ${Distance} ${HEADER_FILES})
