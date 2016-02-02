@@ -7,12 +7,13 @@ import re
 import numpy as np
 
 
-k=6
-sig_label_file = "sig/6mer_label"
-# sig_label_file = "data_trec_eval3/data/3mer_label"
-sig_file = "data_trec_eval3/data/autoencoder-RIsig-4096"
-gene_file = "data_trec_eval3/all_dna.fa"
-gene_sig_output = "data_trec_eval3/gene_sig_output.csv"
+k=8
+sig_name = "8mer_semantic_sig_512_all_dna_new1"
+sig_label_file = "../TestData2/sig/8mer_label"
+gene_sig_name = "gene_sig_" + sig_name
+sig_file = "../TestData2/sig/" + sig_name
+gene_file = "../TestData2/alfsim-data2/DB/all_dna.fa"
+gene_sig_output = "../TestData2/alfsim-data2/experiment_result/" + gene_sig_name
 f_gene = open(gene_file, "r")
 f_w = open(gene_sig_output, "w")
 

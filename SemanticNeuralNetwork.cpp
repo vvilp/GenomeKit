@@ -46,11 +46,11 @@ enum DataType { TEXT, GENOME };
 
 class SemanticNeuralNetwork {
        public:
-	DataType dataType = TEXT;
+	DataType dataType = GENOME;
 
 	const int maxInnerIter = 2;
 	const int maxIteration = 50;
-	const int hlsize = 256;  // hidden layer size
+	const int hlsize = 512;  // hidden layer size
 	const int shiftSize = 5;
 	const int threadNum = 30;
 	const float alpha = 0.01;
@@ -455,7 +455,7 @@ vector<string> GetKmers(string gene, int kmerSize) {
 }
 
 void TrainGenome(string path) {
-	int kmerSize = 6;
+	int kmerSize = 8;
 
 	std::ifstream t(path);
 	string line = "";

@@ -12,8 +12,8 @@ def write_output(labeli, labelj, fw):
     output_str = "%s 0 %s 1\n" % (labeli, labelj)
     fw.write(output_str)
 
-readfile = "data_trec_eval4/MSA_all_dna.phy"
-writefile = "data_trec_eval4/tec_eval_rel"
+readfile = "../TestData2/alfsim-data2/MSA/MSA_all_dna.phy"
+writefile = "../TestData2/alfsim-data2/experiment_result/trec_eval_rel"
 f = open(readfile,"r")
 fw = open(writefile,"w")
 

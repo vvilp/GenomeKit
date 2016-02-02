@@ -3,4 +3,5 @@ build
 .idea
 XcodeProject
 TestData
+TestData2
 .stdafx.c++.pch
