@@ -1,12 +1,13 @@
 import numpy as np
 from scipy.spatial import distance
 
-gene_sig_file = "data_trec_eval3/gene_sig_output.csv"
-gene_distance_output = "data_trec_eval3/distance.csv"
-gene_trect_result_output = "data_trec_eval3/trec_result"
+sig_name = "5mer_semantic_sig_512_all_dna_new1"
+gene_sig_name = "gene_sig_" + sig_name
+gene_sig_file = "../TestData2/alfsim-data2/experiment_result/" + gene_sig_name
+gene_trect_result_output = "../TestData2/alfsim-data2/experiment_result/" + gene_sig_name + "_rec_result"
 f_gene_sig = open(gene_sig_file, "r")
 
-f_dis_w = open(gene_distance_output, "w")
+# f_dis_w = open(gene_distance_output, "w")
 f_trec_w = open(gene_trect_result_output, "w")
 
 sig_dict = dict()
