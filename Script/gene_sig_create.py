@@ -6,8 +6,8 @@ import os
 import re
 import numpy as np
 
-k=0
-sig_name = "TestSig"
+k=5
+sig_name = "5mer_semantic_sig_512_all_dna_new2_autoencoder"
 gene_sig_name = "gene_sig_" + sig_name
 sig_file = "../TestData2/sig/" + sig_name
 gene_file = "../TestData2/alfsim-data2/DB/all_dna.fa"
