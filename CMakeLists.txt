@@ -2,7 +2,7 @@
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/bin")
 
 ADD_DEFINITIONS(
-    -std=c++11 
+    -std=c++11
 )
 
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
@@ -16,6 +16,16 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 project(GenomeKit)
 
 set(HEADER_FILES Util.hpp)
+
+
+set(SemanticNeuralNetwork SemanticNeuralNetwork.cpp)
+add_executable(SemanticNeuralNetwork ${SemanticNeuralNetwork} ${HEADER_FILES})
+
+set(Distance Distance.cpp)
+add_executable(Distance ${Distance} ${HEADER_FILES})
+
+set(GeneSigDistance GeneSigDistance.cpp)
+add_executable(GeneSigDistance ${GeneSigDistance} ${HEADER_FILES})
 
 # find_package(Boost 1.58.0 REQUIRED COMPONENTS filesystem)
 # include_directories(${Boost_INCLUDE_DIR})
@@ -38,9 +48,3 @@ set(HEADER_FILES Util.hpp)
 # set(RIGenome RIGenome.cpp)
 # add_executable(RIGenome ${RIGenome})
 # target_link_libraries(RIGenome ${Boost_LIBRARIES} boost_system)
-
-set(SemanticNeuralNetwork SemanticNeuralNetwork.cpp)
-add_executable(SemanticNeuralNetwork ${SemanticNeuralNetwork} ${HEADER_FILES})
-
-set(Distance Distance.cpp)
-add_executable(Distance ${Distance} ${HEADER_FILES})

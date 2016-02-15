@@ -163,6 +163,15 @@ class UT_GenomeKit {
 		searchCombination(0, k, n, combination, combinations);
 		cout << combinations.size();
 	}
+
+	static vector<string> GetKmers(string gene, int kmerSize) {
+		vector<string> kmers;
+		for (size_t i = 0; i < gene.size() - kmerSize + 1; i++) {
+			string kmer = gene.substr(i, kmerSize);
+			kmers.push_back(kmer);
+		}
+		return kmers;
+	}
 };
 
 #endif  // GENOMEKIT_UTIL_H
