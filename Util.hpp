@@ -64,6 +64,24 @@ class UT_Math {
 		return res;
 	}
 
+	static float EuclideanDis(const vector<float> &a, const vector<float> &b) {
+		float res = 0.0;
+		for (int i = 0; i < a.size(); ++i) {
+			res += (a[i] - b[i]) * (a[i] - b[i]);
+		}
+		res = sqrt(res);
+		return res;
+	}
+
+	static float TMPDis(const vector<float> &a, const vector<float> &b) {
+		float res = 0.0;
+		for (int i = 0; i < a.size(); ++i) {
+			res += (a[i] - b[i]) * (a[i] - b[i]);
+		}
+		res = (float)res/a.size();
+		return res;
+	}
+
 	static float sigmoid(float x) { return 1.0 / (1.0 + exp(-x)); }
 };
 
