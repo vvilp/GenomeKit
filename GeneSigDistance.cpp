@@ -55,12 +55,12 @@ map<string, vector<float>> GenerateGeneSigDict(string path, map<string, vector<f
 		if (line[0] == '>') {
 			geneName = line.substr(1, line.find(',') - 1);
 
-            // transfer G1_SE015 -> >S015/00001
-            char name[100];
-            string first = geneName.substr(geneName.find("SE") + 2);
-            int second = stoi(geneName.substr(1, geneName.find('_') - 1));
-            sprintf(name, "S%s/%05d", first.c_str(), second);
-            geneName = string(name);
+			// transfer G1_SE015 -> >S015/00001
+			// char name[100];
+			// string first = geneName.substr(geneName.find("SE") + 2);
+			// int second = stoi(geneName.substr(1, geneName.find('_') - 1));
+			// sprintf(name, "S%s/%05d", first.c_str(), second);
+			// geneName = string(name);
 
 			if ((i) % 1000 == 0) {
 				cout << "finish gene sig generation num: " << i / 2 << endl;
@@ -101,58 +101,57 @@ map<string, vector<float>> GenerateGeneSigDict(string path, map<string, vector<f
 	return geneSigDict;
 }
 
-void InsertToVector(vector<pair<string, float>> & geneScoreVec, pair<string, float> geneScore)
-{
-    for (int i = geneScoreVec.size() - 1; i >= 0; i--) {
-    	if (geneScoreVec[i].second < geneScore.second) {
-    		if (i == geneScoreVec.size() - 1) {
-    			geneScoreVec[i] = geneScore;
-    		} else {
-    			geneScoreVec[i + 1] = geneScoreVec[i];
-    			geneScoreVec[i] = geneScore;
-    		}
-    	} else {
-    		break;
-    	}
-    }
+void InsertToVector(vector<pair<string, float>> &geneScoreVec, pair<string, float> geneScore) {
+	for (int i = geneScoreVec.size() - 1; i >= 0; i--) {
+		if (geneScoreVec[i].second < geneScore.second) {
+			if (i == geneScoreVec.size() - 1) {
+				geneScoreVec[i] = geneScore;
+			} else {
+				geneScoreVec[i + 1] = geneScoreVec[i];
+				geneScoreVec[i] = geneScore;
+			}
+		} else {
+			break;
+		}
+	}
 }
 
 void TopGeneSimilarityScore(map<string, vector<float>> &geneSigDict, int topKnum = 10, string outputPath = "output_trec_eval") {
-    cout << "top gene similarity score calculating..." << endl;
-	map<string, vector<pair<string, float>>*> genePairScore;
+	cout << "top gene similarity score calculating..." << endl;
+	map<string, vector<pair<string, float>> *> genePairScore;
 	map<string, vector<float>>::iterator iter;
 	map<string, vector<float>>::iterator iter2;
 
 	int count = 0;
 	for (iter = geneSigDict.begin(); iter != geneSigDict.end(); iter++) {
 		vector<pair<string, float>> *geneScoreVecAB;
-        if(genePairScore.find(iter->first) != genePairScore.end()) {
-            geneScoreVecAB = genePairScore[iter->first];
-        } else {
-            geneScoreVecAB = new vector<pair<string, float>>(topKnum, pair<string, float>("", 0.0));
-            genePairScore[iter->first] = geneScoreVecAB;
-        }
+		if (genePairScore.find(iter->first) != genePairScore.end()) {
+			geneScoreVecAB = genePairScore[iter->first];
+		} else {
+			geneScoreVecAB = new vector<pair<string, float>>(topKnum, pair<string, float>("", 0.0));
+			genePairScore[iter->first] = geneScoreVecAB;
+		}
 		for (iter2 = iter; iter2 != geneSigDict.end(); iter2++) {
-            vector<pair<string, float>> *geneScoreVecBA;
-            if(genePairScore.find(iter2->first) != genePairScore.end()) {
-                geneScoreVecBA = genePairScore[iter2->first];
-            } else {
-                geneScoreVecBA = new vector<pair<string, float>>(topKnum, pair<string, float>("", 0.0));
-                genePairScore[iter2->first] = geneScoreVecBA;
-            }
+			vector<pair<string, float>> *geneScoreVecBA;
+			if (genePairScore.find(iter2->first) != genePairScore.end()) {
+				geneScoreVecBA = genePairScore[iter2->first];
+			} else {
+				geneScoreVecBA = new vector<pair<string, float>>(topKnum, pair<string, float>("", 0.0));
+				genePairScore[iter2->first] = geneScoreVecBA;
+			}
 
 			float score = UT_Math::TMPDis(iter->second, iter2->second);
 			score = (1.0 / (1.0 + (score))) * 1000000;
 
-            // A - B
-            pair<string, float> geneScore1(iter2->first, score);
-            InsertToVector(*geneScoreVecAB, geneScore1);
+			// A - B
+			pair<string, float> geneScore1(iter2->first, score);
+			InsertToVector(*geneScoreVecAB, geneScore1);
 
-            if(iter != iter2) {
-                // B - A
-                pair<string, float> geneScore2(iter->first, score);
-                InsertToVector(*geneScoreVecBA, geneScore2);
-            }
+			if (iter != iter2) {
+				// B - A
+				pair<string, float> geneScore2(iter->first, score);
+				InsertToVector(*geneScoreVecBA, geneScore2);
+			}
 		}
 
 		count++;
@@ -180,7 +179,7 @@ void TopGeneSimilarityScore(map<string, vector<float>> &geneSigDict, int topKnum
 
 	cout << "saving trec_eval_output" << endl;
 	ofstream ofile(outputPath);
-	map<string, vector<pair<string, float>>*>::iterator iterGPS;
+	map<string, vector<pair<string, float>> *>::iterator iterGPS;
 	for (iterGPS = genePairScore.begin(); iterGPS != genePairScore.end(); iterGPS++) {
 		// cout << iterGPS->first << " - " << endl;
 		vector<pair<string, float>> *geneScoreVec = iterGPS->second;
@@ -196,14 +195,22 @@ void TopGeneSimilarityScore(map<string, vector<float>> &geneSigDict, int topKnum
 	ofile.close();
 }
 
-int main() {
+int main(int arg, char *argvs[]) {
+
 	// string kmerSigPath = "../TestData3_test89/3mer-semantic-sig-128";
 	// string geneSigPath = "../TestData3_test89/3mer-semantic-sig-128-gene-sig";
 	// string genePath = "../TestData3_test89/genes_100.faa";
 
-    string kmerSigPath = "../TestData2/sig/5mer_semantic_sig_256_all_dna_new_all";
-    string geneSigPath = "../TestData2/sig/5mer_semantic_sig_256_all_dna_new_all-gene_sig";
-    string genePath = "../TestData2/alfsim-data2/DB/all_dna.fa";
+	// string kmerSigPath = "../TestData2/sig/5mer_semantic_sig_256_all_dna_new_all";
+	// string geneSigPath = "../TestData2/sig/5mer_semantic_sig_256_all_dna_new_all-gene_sig";
+	// string genePath = "../TestData2/alfsim-data2/DB/all_dna.fa";
+
+	// argvs[1] sig file
+	// argvs[2] gene file
+
+	string kmerSigPath = string(argvs[1]);
+	string genePath = string(argvs[2]);
+	string geneSigPath = kmerSigPath + "_gene_sig";
 
 	string scoreOutputPath = geneSigPath + "_trec_eval";
 	map<string, vector<float>> kmerSigDict = GetSigDict(kmerSigPath);
@@ -217,19 +224,5 @@ int main() {
 		geneSigDict = GenerateGeneSigDict(genePath, kmerSigDict, geneSigPath);
 	}
 
-	TopGeneSimilarityScore(geneSigDict, 500, scoreOutputPath);
-
-
+	TopGeneSimilarityScore(geneSigDict, 800, scoreOutputPath);
 }
-
-// transfer G1_SE015 -> >S015/00001
-// string geneName = "G1_SE015";
-//
-// cout << geneName.substr(1, geneName.find('_') - 1) << endl;;
-// cout << geneName.substr(geneName.find("SE") + 2) << endl;;
-//
-// char name[100];
-// string first = geneName.substr(geneName.find("SE") + 2);
-// int second = stoi(geneName.substr(1, geneName.find('_') - 1));
-// sprintf(name, "S%s/%05d", first.c_str(), second);
-// cout << string(name) << endl;

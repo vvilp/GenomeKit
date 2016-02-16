@@ -50,7 +50,7 @@ class SemanticNeuralNetwork {
 
 	const int maxInnerIter = 2;
 	const int maxIteration = 20;
-	const int hlsize = 128;  // hidden layer size
+ 	int hlsize = 256;  // hidden layer size
 	const int shiftSize = 5;
 	const int threadNum = 30;
 	const float alpha = 0.1;
@@ -77,9 +77,10 @@ class SemanticNeuralNetwork {
 	float **WIHe;      // WIHe[threadIndex][hlsize]
 	float **WIHe_pre;  // monument
 
-	void InitGenomeTraining(int kmerSize) {
+	void InitGenomeTraining(int kmerSize, int hidLayerSize) {
 		dataType = GENOME;
 		this->kmerSize = kmerSize;
+		this->hlsize = hidLayerSize;
 	}
 
 	void InitTextTraining() { dataType = TEXT; }

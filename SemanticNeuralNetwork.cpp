@@ -61,7 +61,7 @@ vector<string> GetKmers(string gene, int kmerSize) {
 
 void TrainGenome(string path) {
 	int kmerSize = 3;
-
+	int hidlayerSize = 256;
 	std::ifstream t(path);
 	string line = "";
 
@@ -81,10 +81,10 @@ void TrainGenome(string path) {
 
 	cout << "Genes num: " << kmerGenes.size() << endl;
 	SemanticNeuralNetwork snn;
-	snn.InitGenomeTraining(kmerSize);
+	snn.InitGenomeTraining(kmerSize,hidlayerSize);
 	snn.InitTrainingData(kmerGenes);
 	snn.Train();
-	snn.Save(path + ".rep");
+	snn.Save(path + "_" + to_string(kmerSize) + "mer_" + to_string(hidlayerSize) + "_sig");
 }
 
 int main(int arg, char *argvs[]) {
