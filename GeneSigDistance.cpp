@@ -26,6 +26,7 @@ class GeneSigDistance {
 	map<string, vector<float>> kmerSigDict;
 
 	vector<string> genes;
+	vector<string> geneSequences;
 	vector<vector<float>> geneSigs;
 	map<string, vector<float>> geneSigDict;
 
@@ -71,7 +72,33 @@ class GeneSigDistance {
 		cout << "sig len: " << kmerSigs[0].size() << endl;
 	}
 
-	void GenerateGeneSigs(string path) {
+	void CalculateGeneSigsThread(int threadIndex, int threadNum) {
+		// cout << "CalculateGeneSigsThread" << endl;
+		int fragSize = int(geneNum / threadNum);
+		int startIndex = fragSize * threadIndex;
+		int endIndex = startIndex + fragSize - 1;
+		if (threadIndex == threadNum - 1) {
+			endIndex = geneNum - 1;
+		}
+		cout << startIndex << "|" << endIndex << endl;
+		for (int i = startIndex; i <= endIndex; i++) {
+			vector<string> geneKmers = UT_GenomeKit::GetKmers(geneSequences[i], kmerLen);
+			vector<float> geneSig(kmerSigLen, 0.0);
+			for (int ki = 0; ki < geneKmers.size(); ki++) {
+				vector<float> kmerSig = kmerSigDict[geneKmers[ki]];
+				for (int j = 0; j < kmerSigLen; j++) {
+					geneSig[j] += kmerSig[j];
+				}
+			}
+			// cout << startIndex << endl;
+			geneSigs[i] = (geneSig);
+			geneSigDict[genes[i]] = geneSig;
+			finishCount++;
+			printf("\rProgress: %.3f%%", (float)finishCount / (float)geneNum * 100.0);
+		}
+	}
+
+	void GenerateGeneSigs(string path, int threadNum) {
 		std::ifstream t(path);
 		std::stringstream buffer;
 		buffer << t.rdbuf();
@@ -90,22 +117,27 @@ class GeneSigDistance {
 				sprintf(name, "S%s/%05d", first.c_str(), second);
 				geneName = string(name);
 
-				if ((i) % 2000 == 0 && i != 0) {
-					cout << "Finish gene sig generation num: " << i / 2 << endl;
-				}
-			} else {
-				vector<string> geneKmers = UT_GenomeKit::GetKmers(line, kmerLen);
-				vector<float> geneSig(kmerSigLen, 0.0);
-				for (int ki = 0; ki < geneKmers.size(); ki++) {
-					vector<float> kmerSig = kmerSigDict[geneKmers[ki]];
-					for (int j = 0; j < kmerSigLen; j++) {
-						geneSig[j] += kmerSig[j];
-					}
-				}
 				genes.push_back(geneName);
-				geneSigs.push_back(geneSig);
-				geneSigDict[geneName] = geneSig;
+			} else {
+				geneSequences.push_back(line);
 			}
+		}
+		geneNum = genes.size();
+
+		geneSigs = vector<vector<float>>(genes.size());
+		finishCount = 0;
+		vector<thread *> threadPool;
+		for (int i = 0; i < threadNum; i++) {
+			thread *t = new thread(&GeneSigDistance::CalculateGeneSigsThread, this, i, threadNum);
+			threadPool.push_back(t);
+		}
+
+		for (int i = 0; i < threadNum; i++) {
+			threadPool[i]->join();
+		}
+
+		for (int i = 0; i < threadNum; i++) {
+			delete threadPool[i];
 		}
 	}
 
@@ -123,65 +155,73 @@ class GeneSigDistance {
 		ofile.close();
 	}
 
-	void GetGeneSigs(string genePath, string sigPath) {
+	void GetGeneSigs(string genePath, string sigPath, int threadNum) {
 		if (UT_File::IsFileExist(sigPath)) {
 			cout << "Gene sig exist. Read from file" << endl;
 			GetSigs(sigPath, genes, geneSigs, geneSigDict);
 
 		} else {
 			cout << "Gene sig does not exist. Generating" << endl;
-			GenerateGeneSigs(genePath);
+			GenerateGeneSigs(genePath, threadNum);
 			SaveGeneSigs(sigPath);
 		}
 		geneNum = genes.size();
 		cout << "Genes num: " << geneNum << endl;
 	}
 
-	void CalculatGeneDistScoreThread(int threadIndex, int startIndex, int endIndex) {
-		// cout << "startIndex : " << startIndex << "endIndex : " << endIndex << endl;
+	void CalculatGeneDistScoreThread(int threadIndex, int threadNum) {
 		float dist = 0.0;
-		for (size_t i = startIndex; i <= endIndex; i++) {
-			for (size_t j = i; j < geneNum; j++) {
+		int fragSize = int(geneNum / threadNum);
+		int startIndex = fragSize * threadIndex;
+		int endIndex = startIndex + fragSize - 1;
+		if (threadIndex == threadNum - 1) {
+			endIndex = geneNum - 1;
+		}
+
+		for (int i = startIndex; i <= endIndex; i++) {
+			for (int j = 0; j < geneNum; j++) {
 				if (i == j) {
 					dist = 0;
+					dist = (1.0 / (1.0 + (dist))) * 1000000;
 				} else {
-					dist = UT_Math::TMPDis(geneSigs[i], geneSigs[j]);
+					if (pairDistScore[i][j] != 0.0 || pairDistScore[j][i] != 0.0) {
+						dist = pairDistScore[i][j] != 0.0 ? pairDistScore[i][j] : pairDistScore[j][i];
+					} else {
+						dist = UT_Math::TMPDis(geneSigs[i], geneSigs[j]);
+						dist = (1.0 / (1.0 + (dist))) * 1000000;
+					}
 				}
-				pairDistScore[i][j] = (1.0 / (1.0 + (dist))) * 1000000;
-				pairDistScore[j][i] = pairDistScore[i][j];
+				pairDistScore[i][j] = dist;
+				pairDistScore[j][i] = dist;
+
+				InsertTop(i, j, pairDistScore[i][j]);
 			}
 			finishCount++;
 			printf("\rProgress: %.3f%%", (float)finishCount / (float)geneNum * 100.0);
 		}
 	}
 
-	void CalculateGenePairDistScore(int threadNum = 8) {
+	void CalculateGenePairDistScore(int threadNum = 8, int topk = 400) {
+		this->topk = topk;
+
+		topDistGeneIndex = new int *[geneNum];
+		topDistScore = new float *[geneNum];
+		for (size_t i = 0; i < geneNum; i++) {
+			topDistGeneIndex[i] = new int[topk];
+			topDistScore[i] = new float[topk];
+			memset(topDistGeneIndex[i], 0, sizeof(topDistGeneIndex[0][0]) * topk);
+			memset(topDistScore[i], 0.0, sizeof(topDistScore[0][0]) * topk);
+		}
+
 		pairDistScore = new float *[geneNum];
 		for (size_t i = 0; i < geneNum; i++) {
 			pairDistScore[i] = new float[geneNum];
 		}
 
-		// divide into different group for threads
-		int startIndex = 0;
-		int endIndex = 0;
-		int groupCount = (int)(geneNum * geneNum / 2 / threadNum);
-		cout << "thread groupCount: " << groupCount << endl;
-
+		finishCount = 0;
 		vector<thread *> threadPool;
-
 		for (int i = 0; i < threadNum; i++) {
-			startIndex = endIndex == 0 ? 0 : endIndex + 1;
-
-			if (i != threadNum - 1) {
-				int gapNum = geneNum - startIndex;
-				endIndex = geneNum - (int)sqrt(gapNum * gapNum - groupCount * 2);
-			} else {
-				endIndex = geneNum - 1;
-			}
-			cout << "thread id:" << i << endl;
-			cout << "startIndex: " << startIndex << endl;
-			cout << "endIndex: " << endIndex << endl;
-			thread *t = new thread(&GeneSigDistance::CalculatGeneDistScoreThread, this, i, startIndex, endIndex);
+			thread *t = new thread(&GeneSigDistance::CalculatGeneDistScoreThread, this, i, threadNum);
 			threadPool.push_back(t);
 		}
 
@@ -225,31 +265,6 @@ class GeneSigDistance {
 			}
 		}
 	}
-
-	void RankTopGenePairDistScore(int topk = 200) {
-		cout << "\nRankTopGenePairDistScore" << endl;
-		this->topk = topk;
-
-		topDistGeneIndex = new int *[geneNum];
-		topDistScore = new float *[geneNum];
-		for (size_t i = 0; i < geneNum; i++) {
-			topDistGeneIndex[i] = new int[topk];
-			topDistScore[i] = new float[topk];
-			memset(topDistGeneIndex[i], 0, sizeof(topDistGeneIndex[0][0]) * topk);
-			memset(topDistScore[i], 0.0, sizeof(topDistScore[0][0]) * topk);
-		}
-
-		for (size_t i = 0; i < geneNum; i++) {
-			for (size_t j = i; j < geneNum; j++) {
-				InsertTop(i, j, pairDistScore[i][j]);
-				if (i != j) {
-					InsertTop(j, i, pairDistScore[i][j]);
-				}
-			}
-			printf("\rProgress: %.3f%%", (float)i / (float)geneNum * 100.0);
-		}
-		cout << "finish" << endl;
-	}
 };
 
 int main(int arg, char *argvs[]) {
@@ -263,12 +278,15 @@ int main(int arg, char *argvs[]) {
 
 	string kmerSigPath = string(argvs[1]);
 	string genePath = string(argvs[2]);
+	string threadNumStr = string(argvs[3]);
 	string geneSigPath = kmerSigPath + "_gene_sig";
+
+	int threadNum = stoi(threadNumStr);
+    cout << "Thread Num: " << threadNum << endl;
 
 	GeneSigDistance gsd;
 	gsd.GetKmerSigs(kmerSigPath);
-	gsd.GetGeneSigs(genePath, geneSigPath);
-	gsd.CalculateGenePairDistScore(8);
-	gsd.RankTopGenePairDistScore(400);
+	gsd.GetGeneSigs(genePath, geneSigPath, threadNum);
+	gsd.CalculateGenePairDistScore(threadNum, 400);
 	gsd.SaveTrecEval(geneSigPath + "_trec_result");
 }
