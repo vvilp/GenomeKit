@@ -287,6 +287,6 @@ int main(int arg, char *argvs[]) {
 	GeneSigDistance gsd;
 	gsd.GetKmerSigs(kmerSigPath);
 	gsd.GetGeneSigs(genePath, geneSigPath, threadNum);
-	gsd.CalculateGenePairDistScore(threadNum, 400);
+	gsd.CalculateGenePairDistScore(threadNum, 500);
 	gsd.SaveTrecEval(geneSigPath + "_trec_result");
 }

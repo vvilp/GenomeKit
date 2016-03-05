@@ -21,7 +21,7 @@ class SemanticNeuralNetwork {
 		int count;
 		int nodeCode;
 		vector<int> codeArray;
-		VocabNode *parent;   // for building huffman tree
+		VocabNode *parent;  // for building huffman tree
 		VocabNode() {}
 		VocabNode(string word, int index, int count) {
 			this->word = word;
@@ -50,10 +50,10 @@ class SemanticNeuralNetwork {
 
 	const int maxInnerIter = 2;
 	const int maxIteration = 20;
- 	int hlsize = 256;  // hidden layer size
-	const int shiftSize = 5;
+	int hlsize = 512;  // hidden layer size
+	const int shiftSize = 3;
 	const int threadNum = 30;
-	const float alpha = 0.1;
+	const float alpha = 0.2;
 	const float beta = 0.05;  // for monument
 
 	int kmerSize = 5;
@@ -78,12 +78,16 @@ class SemanticNeuralNetwork {
 	float **WIHe_pre;  // monument
 
 	void InitGenomeTraining(int kmerSize, int hidLayerSize) {
+		srand(time(0));
 		dataType = GENOME;
 		this->kmerSize = kmerSize;
 		this->hlsize = hidLayerSize;
 	}
 
-	void InitTextTraining() { dataType = TEXT; }
+	void InitTextTraining() {
+		srand(time(0));
+		dataType = TEXT;
+	}
 
 	void CreateHuffmanTree() {
 		cout << "Create Huffman Tree" << endl;
@@ -316,7 +320,7 @@ class SemanticNeuralNetwork {
 			int inputArray[20];
 			int inputCount = 0;
 			int localShift = 0;
-			int localKmerSize = kmerSize;// kmer input not overlap
+			int localKmerSize = kmerSize;  // kmer input not overlap
 			// int localKmerSize = 1;// kmer input overlap
 			for (int j = localKmerSize;; j += localKmerSize) {  // kmer input not overlap
 				if (localShift >= shiftSize) {

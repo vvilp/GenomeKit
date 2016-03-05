@@ -17,8 +17,8 @@ using namespace std;
 class GeneSigDistance {
        public:
 	int kmerNum;
-	int kmerLen=5;
-	int kmerSigLen=512;
+	int kmerLen = 5;
+	int kmerSigLen = 512;
 	int geneNum;
 
 	vector<string> kmers;
@@ -30,9 +30,8 @@ class GeneSigDistance {
 	vector<vector<float>> geneSigs;
 	map<string, vector<float>> geneSigDict;
 
-    vector<vector<vector<float>>> genePartSigs; //genePartSigs[geneIndex][PartIndex][sig]
-    map<string, vector<vector<float>>> genePartSigDict;
-
+	vector<vector<vector<float>>> genePartSigs;  // genePartSigs[geneIndex][PartIndex][sig]
+	map<string, vector<vector<float>>> genePartSigDict;
 
 	float **pairDistScore;  // higher when closer
 
@@ -41,13 +40,12 @@ class GeneSigDistance {
 	int topk;
 
 	int finishCount = 0;
+	int partLen = 32;
+	int breakLen = 10;
 
 	// functions
 
-    float GetScoreFromDist(float distance)
-    {
-        return (1.0 / (1.0 + (distance))) * 1000000;
-    }
+	float GetScoreFromDist(float distance) { return (1.0 / (1.0 + (distance))) * 1000000; }
 
 	void GetSigs(string path, vector<string> &labels, vector<vector<float>> &sigs, map<string, vector<float>> &dict) {
 		std::ifstream t(path);
@@ -108,63 +106,60 @@ class GeneSigDistance {
 		}
 	}
 
-    void GenePartitionSig(const string & gene, int geneIndex)
-    {
-        // cout << gene << endl;
-        int partLen = 64;
-        int breakLen = 32;
-        vector<vector<float>> PartSigs;
-        for(int i = 0; i < gene.size(); i+=breakLen) {
-            string genePart;
-            if(partLen >= gene.size()) {
-                genePart = gene;
-            } else {
-                if (i + partLen >= gene.size()) {
-                    genePart = gene.substr(gene.size() - partLen, partLen);
-                } else {
-                    genePart = gene.substr(i, partLen);
-                }
-            }
+	void GenePartitionSig(const string &gene, int geneIndex) {
+		// cout << gene << endl;
 
-            vector<string> geneKmers = UT_GenomeKit::GetKmers(genePart, kmerLen);
-            vector<float> PartSig(kmerSigLen, 0.0);
+		vector<vector<float>> PartSigs;
+		for (int i = 0; i < gene.size(); i += breakLen) {
+			string genePart;
+			if (partLen >= gene.size()) {
+				genePart = gene;
+			} else {
+				if (i + partLen >= gene.size()) {
+					genePart = gene.substr(gene.size() - partLen, partLen);
+				} else {
+					genePart = gene.substr(i, partLen);
+				}
+			}
 
-            for (int ki = 0; ki < geneKmers.size(); ki++) {
-                // cout << geneKmers[ki] << endl;
-                vector<float> kmerSig = kmerSigDict[geneKmers[ki]];
-                for (int j = 0; j < kmerSigLen; j++) {
+			vector<string> geneKmers = UT_GenomeKit::GetKmers(genePart, kmerLen);
+			vector<float> PartSig(kmerSigLen, 0.0);
+
+			for (int ki = 0; ki < geneKmers.size(); ki++) {
+				// cout << geneKmers[ki] << endl;
+				vector<float> kmerSig = kmerSigDict[geneKmers[ki]];
+				for (int j = 0; j < kmerSigLen; j++) {
 					PartSig[j] += kmerSig[j];
 				}
-            }
-            PartSigs.push_back(PartSig);
-            
-            if(partLen >= gene.size()) {
-                break;
-            }
-        }
-        genePartSigs[geneIndex] = PartSigs;
-        genePartSigDict[gene] = PartSigs;
+			}
+			PartSigs.push_back(PartSig);
 
+			if (partLen >= gene.size()) {
+				break;
+			}
+		}
+		genePartSigs[geneIndex] = PartSigs;
+		genePartSigDict[gene] = PartSigs;
 
-        // cout << "geneSigs[geneIndex].size(): " << genePartSigs[geneIndex].size() << endl;
-    }
+		// cout << "geneSigs[geneIndex].size(): " << genePartSigs[geneIndex].size() << endl;
+	}
 
-    void CalculateGenePartitionSigThread(int threadIndex, int threadNum) {
-        // cout << "CalculateGeneSigsThread" << endl;
-        int fragSize = int(geneNum / threadNum);
-        int startIndex = fragSize * threadIndex;
-        int endIndex = startIndex + fragSize - 1;
-        if (threadIndex == threadNum - 1) {
-            endIndex = geneNum - 1;
-        }
-        // cout << startIndex << "|" << endIndex << endl;
-        for (int i = startIndex; i <= endIndex; i++) {
-            GenePartitionSig(geneSequences[i], i);
+	void CalculateGenePartitionSigThread(int threadIndex, int threadNum) {
+		// cout << "CalculateGeneSigsThread" << endl;
+		int fragSize = int(geneNum / threadNum);
+		int startIndex = fragSize * threadIndex;
+		int endIndex = startIndex + fragSize - 1;
+		if (threadIndex == threadNum - 1) {
+			endIndex = geneNum - 1;
+		}
+		// cout << startIndex << "|" << endIndex << endl;
+		for (int i = startIndex; i <= endIndex; i++) {
+			GenePartitionSig(geneSequences[i], i);
 
-            finishCount++;
-            printf("\rProgress: %.3f%%", (float)finishCount / (float)geneNum * 100.0);
-        }
-    }
+			finishCount++;
+			printf("\rProgress: %.3f%%", (float)finishCount / (float)geneNum * 100.0);
+		}
+	}
 
 	void GenerateGeneSigs(string path, int threadNum) {
 		std::ifstream t(path);
@@ -193,7 +188,7 @@ class GeneSigDistance {
 		geneNum = genes.size();
 
 		geneSigs = vector<vector<float>>(genes.size());
-        genePartSigs = vector<vector<vector<float>>>(genes.size());
+		genePartSigs = vector<vector<vector<float>>>(genes.size());
 		finishCount = 0;
 		vector<thread *> threadPool;
 		for (int i = 0; i < threadNum; i++) {
@@ -225,15 +220,16 @@ class GeneSigDistance {
 	}
 
 	void GetGeneSigs(string genePath, string sigPath, int threadNum) {
-		if (UT_File::IsFileExist(sigPath)) {
-			cout << "Gene sig exist. Read from file" << endl;
-			GetSigs(sigPath, genes, geneSigs, geneSigDict);
-
-		} else {
-			cout << "Gene sig does not exist. Generating" << endl;
-			GenerateGeneSigs(genePath, threadNum);
-			// SaveGeneSigs(sigPath);
-		}
+		// if (UT_File::IsFileExist(sigPath)) {
+		// 	cout << "Gene sig exist. Read from file" << endl;
+		// 	GetSigs(sigPath, genes, geneSigs, geneSigDict);
+		//
+		// } else {
+		// 	cout << "Gene sig does not exist. Generating" << endl;
+		// 	GenerateGeneSigs(genePath, threadNum);
+		// 	SaveGeneSigs(sigPath);
+		// }
+		GenerateGeneSigs(genePath, threadNum);
 		geneNum = genes.size();
 		cout << "\nGenes num: " << geneNum << endl;
 	}
@@ -270,44 +266,41 @@ class GeneSigDistance {
 		}
 	}
 
-    float CalculateTopGenePartScore(int geneA, int geneB, int topBestK)
-    {
-        float bestScore = 0.0;
-        for (int i = 0; i < genePartSigs[geneA].size(); i++) {
-            for (int j = 0; j < genePartSigs[geneB].size(); j++) {
-                float score = UT_Math::TMPDis(genePartSigs[geneA][i], genePartSigs[geneB][j]);
-                score = GetScoreFromDist(score);
-                if(bestScore < score) {
-                    bestScore = score;
-                    // cout << "geneA: " << geneA << " geneB: " << geneB << " score:" <<  bestScore << endl;
-                }
-            }
-        }
-        return bestScore;
-    }
+	float CalculateTopGenePartScore(int geneA, int geneB, int topBestK) {
+		float bestScore = 0.0;
+		for (int i = 0; i < genePartSigs[geneA].size(); i++) {
+			for (int j = 0; j < genePartSigs[geneB].size(); j++) {
+				float score = UT_Math::TMPDis(genePartSigs[geneA][i], genePartSigs[geneB][j]);
+				score = GetScoreFromDist(score);
+				if (bestScore < score) {
+					bestScore = score;
+					// cout << "geneA: " << geneA << " geneB: " << geneB << " score:" <<  bestScore << endl;
+				}
+			}
+		}
+		return bestScore;
+	}
 
-    void CalculateGenePartScore(int geneA, int geneB)
-    {
-        float score = 0.0;
-        if(geneA == geneB) {
-            score = GetScoreFromDist(0.0);
-            pairDistScore[geneA][geneB] = score;
-        } else {
-            if (pairDistScore[geneA][geneB] != 0.0 || pairDistScore[geneB][geneA] != 0.0) {
-                score = pairDistScore[geneA][geneB] != 0.0 ? pairDistScore[geneA][geneB] : pairDistScore[geneB][geneA];
-            } else {
-                score = CalculateTopGenePartScore(geneA, geneB, 3);
-            }
-            pairDistScore[geneA][geneB] = score;
-            pairDistScore[geneB][geneA] = score;
-        }
-        // cout << "insert : " << geneA << " " << geneB << " " << score << endl;
-        InsertTop(geneA, geneB, score);
-    }
+	void CalculateGenePartScore(int geneA, int geneB) {
+		float score = 0.0;
+		if (geneA == geneB) {
+			score = GetScoreFromDist(0.0);
+			pairDistScore[geneA][geneB] = score;
+		} else {
+			if (pairDistScore[geneA][geneB] != 0.0 || pairDistScore[geneB][geneA] != 0.0) {
+				score = pairDistScore[geneA][geneB] != 0.0 ? pairDistScore[geneA][geneB] : pairDistScore[geneB][geneA];
+			} else {
+				score = CalculateTopGenePartScore(geneA, geneB, 3);
+				pairDistScore[geneA][geneB] = score;
+				pairDistScore[geneB][geneA] = score;
+			}
+		}
+		// cout << "insert : " << geneA << " " << geneB << " " << score << endl;
+		InsertTop(geneA, geneB, score);
+	}
 
-    void CalculateGenePartDistScoreThread(int threadIndex, int threadNum)
-    {
-        float dist = 0.0;
+	void CalculateGenePartDistScoreThread(int threadIndex, int threadNum) {
+		float dist = 0.0;
 		int fragSize = int(geneNum / threadNum);
 		int startIndex = fragSize * threadIndex;
 		int endIndex = startIndex + fragSize - 1;
@@ -315,22 +308,22 @@ class GeneSigDistance {
 			endIndex = geneNum - 1;
 		}
 
-        // cout << "test" << endl;
+		// cout << "test" << endl;
 
-        for (int i = startIndex; i <= endIndex; i++) {
+		for (int i = startIndex; i <= endIndex; i++) {
 			for (int j = 0; j < geneNum; j++) {
-                CalculateGenePartScore(i, j);
+				CalculateGenePartScore(i, j);
 			}
 			finishCount++;
-			// printf("\rProgress: %.3f%%", (float)finishCount / (float)geneNum * 100.0);
-            // if(finishCount % 10 == 0) {
-                cout << "finish count:" << finishCount << endl;
-            // }
+			printf("\rProgress: %.3f%%", (float)finishCount / (float)geneNum * 100.0);
+			// if(finishCount % 10 == 0) {
+			// cout << "finish count:" << finishCount << endl;
+			// }
 		}
-    }
+	}
 
 	void CalculateGenePairDistScore(int threadNum = 8, int topk = 400) {
-        cout << "CalculateGenePairDistScore" << endl;
+		cout << "CalculateGenePairDistScore" << endl;
 		this->topk = topk;
 
 		topDistGeneIndex = new int *[geneNum];
@@ -345,7 +338,7 @@ class GeneSigDistance {
 		pairDistScore = new float *[geneNum];
 		for (size_t i = 0; i < geneNum; i++) {
 			pairDistScore[i] = new float[geneNum];
-            memset(pairDistScore[i], 0.0, sizeof(pairDistScore[0][0]) * geneNum);
+			memset(pairDistScore[i], 0.0, sizeof(pairDistScore[0][0]) * geneNum);
 		}
 
 		finishCount = 0;
@@ -412,11 +405,11 @@ int main(int arg, char *argvs[]) {
 	string geneSigPath = kmerSigPath + "_gene_sig";
 
 	int threadNum = stoi(threadNumStr);
-    cout << "Thread Num: " << threadNum << endl;
+	cout << "Thread Num: " << threadNum << endl;
 
 	GeneSigDistance gsd;
 	gsd.GetKmerSigs(kmerSigPath);
 	gsd.GetGeneSigs(genePath, geneSigPath, threadNum);
-	gsd.CalculateGenePairDistScore(threadNum, 400);
+	gsd.CalculateGenePairDistScore(threadNum, 500);
 	gsd.SaveTrecEval(geneSigPath + "_trec_result");
 }

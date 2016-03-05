@@ -60,8 +60,8 @@ vector<string> GetKmers(string gene, int kmerSize) {
 }
 
 void TrainGenome(string path) {
-	int kmerSize = 3;
-	int hidlayerSize = 256;
+	int kmerSize = 5;
+	int hidlayerSize = 512;
 	std::ifstream t(path);
 	string line = "";
 
@@ -84,7 +84,7 @@ void TrainGenome(string path) {
 	snn.InitGenomeTraining(kmerSize,hidlayerSize);
 	snn.InitTrainingData(kmerGenes);
 	snn.Train();
-	snn.Save(path + "_" + to_string(kmerSize) + "mer_" + to_string(hidlayerSize) + "_sig");
+	snn.Save(path + "_" + to_string((long long)(kmerSize)) + "mer_" + to_string((long long)hidlayerSize) + "_sig");
 }
 
 int main(int arg, char *argvs[]) {

@@ -1,7 +1,9 @@
 import re
 import Queue
-f = open("data_trec_eval3/clustal_distance", "r")
-f_trec_w = open("data_trec_eval3/trec_result_clustal", "w")
+
+path = "../TestData2/alfsim-data2/experiment_result/clustal_distance"
+f = open(path, "r")
+f_trec_w = open(path+"_trect_result", "w")
 row = int(f.readline().strip())
 
 label_arr = []
@@ -38,7 +40,7 @@ for i in range(0, len(distance_str_array)):
         q.put((-score,output_str))
 
     #get first 2000 entry
-    for k in range(0,2000):
+    for k in range(0,400):
         f_trec_w.write(q.get()[1])
     print i
 
