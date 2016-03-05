@@ -24,8 +24,8 @@ add_executable(SemanticNeuralNetwork ${SemanticNeuralNetwork} ${HEADER_FILES})
 set(Distance Distance.cpp)
 add_executable(Distance ${Distance} ${HEADER_FILES})
 
-set(GeneSigDistance GeneSigDistance.cpp)
-add_executable(GeneSigDistance ${GeneSigDistance} ${HEADER_FILES})
+set(GeneSigDistance-partition GeneSigDistance-partition.cpp)
+add_executable(GeneSigDistance-partition ${GeneSigDistance-partition} ${HEADER_FILES})
 
 # find_package(Boost 1.58.0 REQUIRED COMPONENTS filesystem)
 # include_directories(${Boost_INCLUDE_DIR})

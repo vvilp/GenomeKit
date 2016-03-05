@@ -14,6 +14,7 @@
 #include <random>
 #include <functional>
 #include <cstdlib>
+#include <sstream>
 
 using namespace std;
 
