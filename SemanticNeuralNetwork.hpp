@@ -50,10 +50,10 @@ class SemanticNeuralNetwork {
 
 	const int maxInnerIter = 2;
 	const int maxIteration = 20;
-	int hlsize = 512;  // hidden layer size
+	int hlsize = 256;  // hidden layer size
 	const int shiftSize = 3;
 	const int threadNum = 30;
-	const float alpha = 0.2;
+	const float alpha = 0.1;
 	const float beta = 0.05;  // for monument
 
 	int kmerSize = 5;
@@ -320,8 +320,8 @@ class SemanticNeuralNetwork {
 			int inputArray[20];
 			int inputCount = 0;
 			int localShift = 0;
-			int localKmerSize = kmerSize;  // kmer input not overlap
-			// int localKmerSize = 1;// kmer input overlap
+			// int localKmerSize = kmerSize;  // kmer input not overlap
+			int localKmerSize = 1;// kmer input overlap
 			for (int j = localKmerSize;; j += localKmerSize) {  // kmer input not overlap
 				if (localShift >= shiftSize) {
 					break;
@@ -332,11 +332,11 @@ class SemanticNeuralNetwork {
 				bool isAdded = false;
 				int inputIndex = 0;
 				// left kmer
-				// if (i - j > 0) {
-				// 	inputIndex = wordIndexInSentence[sentenceIndex][i - j];
-				// 	inputArray[inputCount++] = inputIndex;
-				// 	isAdded = true;
-				// }
+				if (i - j > 0) {
+					inputIndex = wordIndexInSentence[sentenceIndex][i - j];
+					inputArray[inputCount++] = inputIndex;
+					isAdded = true;
+				}
 
 				// right kmer
 				if (i + j < wordIndexInSentence[sentenceIndex].size()) {

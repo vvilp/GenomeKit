@@ -7,11 +7,11 @@
 # print(iris.data)
 from sklearn import cluster
 
-cluster_num = 10
-k = 5
-sig_name = "5mer_semantic_sig_512_all_dna_new2"
-sig_file_path = "../TestData2/sig/" + sig_name
-cluster_output_path = "../TestData2/sig/" + sig_name + "_cluster_output"
+cluster_num = 5
+k = 3
+sig_name = "all_dna.fa_3mer_256_sig_windows3"
+sig_file_path = "../TestData2/sig2/" + sig_name
+cluster_output_path = "../TestData2/sig2/" + sig_name + "_cluster_output"
 
 f_sig = open(sig_file_path, "r")
 f_output = open(cluster_output_path, "w")
@@ -41,7 +41,7 @@ for i,each in enumerate(k_means.labels_):
     cluster_list[each].append(kmer_label[i])
 
 for i, each_list in enumerate(cluster_list):
-    f_output.write("cluster %d\t" % i )
+    f_output.write("cluster %d\n" % i )
     for each in each_list:
         f_output.write("%s\t" % each)
     f_output.write("\n\n")

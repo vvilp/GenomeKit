@@ -60,8 +60,8 @@ vector<string> GetKmers(string gene, int kmerSize) {
 }
 
 void TrainGenome(string path) {
-	int kmerSize = 5;
-	int hidlayerSize = 512;
+	int kmerSize = 3;
+	int hidlayerSize = 256;
 	std::ifstream t(path);
 	string line = "";
 
