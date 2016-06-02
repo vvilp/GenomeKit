@@ -1,8 +1,8 @@
 import sys
 import random
 
-k = 5
-sig_len = 512
+k = 6
+sig_len = 2048
 kmer_label_file_path = "./" + str(k) + "mer_label"
 sig_file_path =  "./" + str(k) + "mer_rand_sig_" + str(sig_len)
 kmer_alph = "ACGT"
@@ -41,9 +41,11 @@ def rand_list(size):
 kmers = generate_kmers(k, kmer_alph)
 
 for kmer in kmers:
-    kmer_label_file.write(kmer)
-    kmer_label_file.write("\n")
+    # kmer_label_file.write(kmer)
+    # kmer_label_file.write("\n")
     randlist = rand_list(sig_len)
+    sig_file.write(kmer)
+    sig_file.write("\n")
     for r in randlist:
         sig_file.write("%.3f" % r)
         sig_file.write(" ")

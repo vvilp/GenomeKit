@@ -21,8 +21,8 @@ set(HEADER_FILES Util.hpp)
 set(SemanticNeuralNetwork SemanticNeuralNetwork.cpp)
 add_executable(SemanticNeuralNetwork ${SemanticNeuralNetwork} ${HEADER_FILES})
 
-set(Distance Distance.cpp)
-add_executable(Distance ${Distance} ${HEADER_FILES})
+set(GeneSigDistance GeneSigDistance.cpp)
+add_executable(GeneSigDistance ${GeneSigDistance} ${HEADER_FILES})
 
 set(GeneSigDistance-partition GeneSigDistance-partition.cpp)
 add_executable(GeneSigDistance-partition ${GeneSigDistance-partition} ${HEADER_FILES})

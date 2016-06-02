@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.spatial import distance
 
-sig_name = "5mer_semantic_sig_256_all_dna_new_all"
+sig_name = "6mer_rand_sig_2048"
 gene_sig_name = "gene_sig_" + sig_name
 gene_sig_file = "../TestData2/alfsim-data2/experiment_result/" + gene_sig_name
 gene_trect_result_output = "../TestData2/alfsim-data2/experiment_result/" + gene_sig_name + "_rec_result"
