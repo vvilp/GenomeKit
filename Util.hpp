@@ -191,6 +191,15 @@ class UT_GenomeKit {
 		}
 		return kmers;
 	}
+	static map<string,int> GetKmersMap(string gene, int kmerSize) {
+		// vector<string> kmers;
+		map<string,int> kmersMap;
+		for (size_t i = 0; i < gene.size() - kmerSize + 1; i++) {
+			string kmer = gene.substr(i, kmerSize);
+			kmersMap[kmer] = kmersMap[kmer]+1;
+		}
+		return kmersMap;
+	}
 };
 
 #endif  // GENOMEKIT_UTIL_H

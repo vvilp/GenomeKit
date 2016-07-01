@@ -1,10 +1,10 @@
 import numpy as np
 from scipy.spatial import distance
 
-sig_name = "6mer_rand_sig_2048"
+sig_name = "genes_small.faa_2mer_256_sig"
 gene_sig_name = "gene_sig_" + sig_name
-gene_sig_file = "../TestData2/alfsim-data2/experiment_result/" + gene_sig_name
-gene_trect_result_output = "../TestData2/alfsim-data2/experiment_result/" + gene_sig_name + "_rec_result"
+gene_sig_file = "../TestData3_test89/sig/" + gene_sig_name
+gene_trect_result_output = "../TestData3_test89/Precision_recall/" + gene_sig_name + "_rec_result"
 f_gene_sig = open(gene_sig_file, "r")
 
 # f_dis_w = open(gene_distance_output, "w")
@@ -15,7 +15,7 @@ label = ""
 sig = []
 for line in f_gene_sig:
     line = line.strip()
-    if line[0] == 'S':
+    if line[0] == 'g':
         label = line
     else:
         sig = [float(x) for x in line.split()]

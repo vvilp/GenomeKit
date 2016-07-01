@@ -6,12 +6,12 @@ import os
 import re
 import numpy as np
 
-k=6
-sig_name = "6mer_rand_sig_2048"
+k=2
+sig_name = "genes_small.faa_2mer_256_sig"
 gene_sig_name = "gene_sig_" + sig_name
-sig_file = "../TestData2/sig/" + sig_name
-gene_file = "../TestData2/alfsim-data2/DB/all_dna.fa"
-gene_sig_output = "../TestData2/alfsim-data2/experiment_result/" + gene_sig_name
+sig_file = "../TestData3_test89/sig/" + sig_name
+gene_file = "../TestData3_test89/genes_small.faa"
+gene_sig_output = "../TestData3_test89/sig/" + gene_sig_name
 
 f_sig = open(sig_file, "r")
 f_gene = open(gene_file, "r")

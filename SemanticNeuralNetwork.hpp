@@ -48,8 +48,8 @@ class SemanticNeuralNetwork {
        public:
 	DataType dataType = GENOME;
 
-	const int maxInnerIter = 2;
-	const int maxIteration = 20;
+	const int maxInnerIter = 5;
+	const int maxIteration = 50;
 	int hlsize = 256;  // hidden layer size
 	const int shiftSize = 3;
 	const int threadNum = 30;
@@ -320,8 +320,9 @@ class SemanticNeuralNetwork {
 			int inputArray[20];
 			int inputCount = 0;
 			int localShift = 0;
-			// int localKmerSize = kmerSize;  // kmer input not overlap
-			int localKmerSize = 1;// kmer input overlap
+			// int localKmerSize = kmerSize;  // kmer input not
+			// overlap
+			int localKmerSize = 1;				    // kmer input overlap
 			for (int j = localKmerSize;; j += localKmerSize) {  // kmer input not overlap
 				if (localShift >= shiftSize) {
 					break;

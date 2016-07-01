@@ -111,11 +111,11 @@ class GeneSigDistance {
 				geneName = line.substr(1, line.find(',') - 1);
 
 				// transfer G1_SE015 -> >S015/00001
-				char name[100];
-				string first = geneName.substr(geneName.find("SE") + 2);
-				int second = stoi(geneName.substr(1, geneName.find('_') - 1));
-				sprintf(name, "S%s/%05d", first.c_str(), second);
-				geneName = string(name);
+				// char name[100];
+				// string first = geneName.substr(geneName.find("SE") + 2);
+				// int second = stoi(geneName.substr(1, geneName.find('_') - 1));
+				// sprintf(name, "S%s/%05d", first.c_str(), second);
+				// geneName = string(name);
 
 				genes.push_back(geneName);
 			} else {
@@ -156,15 +156,17 @@ class GeneSigDistance {
 	}
 
 	void GetGeneSigs(string genePath, string sigPath, int threadNum) {
-		if (UT_File::IsFileExist(sigPath)) {
-			cout << "Gene sig exist. Read from file" << endl;
-			GetSigs(sigPath, genes, geneSigs, geneSigDict);
-
-		} else {
-			cout << "Gene sig does not exist. Generating" << endl;
-			GenerateGeneSigs(genePath, threadNum);
-			SaveGeneSigs(sigPath);
-		}
+		// if (UT_File::IsFileExist(sigPath)) {
+		// 	cout << "Gene sig exist. Read from file" << endl;
+		// 	GetSigs(sigPath, genes, geneSigs, geneSigDict);
+        //
+		// } else {
+		// 	cout << "Gene sig does not exist. Generating" << endl;
+		// 	GenerateGeneSigs(genePath, threadNum);
+		// 	SaveGeneSigs(sigPath);
+		// }
+        cout << "Gene sig generating" << endl;
+        GenerateGeneSigs(genePath, threadNum);
 		geneNum = genes.size();
 		cout << "Genes num: " << geneNum << endl;
 	}
@@ -282,7 +284,7 @@ int main(int arg, char *argvs[]) {
 	string geneSigPath = kmerSigPath + "_gene_sig";
 
 	int threadNum = stoi(threadNumStr);
-    cout << "Thread Num: " << threadNum << endl;
+	cout << "Thread Num: " << threadNum << endl;
 
 	GeneSigDistance gsd;
 	gsd.GetKmerSigs(kmerSigPath);
