@@ -22,10 +22,10 @@ vector<int> GetRandomIndexVector(int size, float density)
 
 void KmerRISig()
 {
-    int kmerLen = 6;
+    int kmerLen = 2;
     int sigLen = 1024;
-    string path = "TestData2/alfsim-data1/DB/all_dna.fa";
-    string savePath = "kmerRISig";
+    string path = "genes_small.faa";
+    string savePath = "protein-2mer-1024-ri";
 
     map<string, vector<int>> kmerSigDict;
 

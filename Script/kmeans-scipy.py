@@ -8,9 +8,9 @@ from matplotlib import cm
 
 
 # k = 5
-sig_name = "5mer_semantic_sig_256_all_dna_new_all"
-sig_file_path = "../TestData2/sig2/" + sig_name
-cluster_output_path = "../TestData2/sig2/" + sig_name + "_cluster_output"
+sig_name = "dna-w2v-4mer-512-sig-2"
+sig_file_path = "./" + sig_name
+cluster_output_path = "./" + sig_name + "_cluster_output"
 
 f_sig = open(sig_file_path, "r")
 f_output = open(cluster_output_path, "w")
@@ -60,15 +60,18 @@ mrk = 'os^p<dvh8>+x.'
 
 # elbow curve
 fig = plt.figure()
+# plt.figure(1, figsize=(15, 10))
 ax = fig.add_subplot(111)
 ax.plot(KK, betweenss/totss*100, 'b*-')
 ax.plot(KK[kIdx], betweenss[kIdx]/totss*100, marker='o', markersize=12,
     markeredgewidth=2, markeredgecolor='r', markerfacecolor='None')
 ax.set_ylim((0,100))
 plt.grid(True)
+# plt.figure(figsize=(20, 20))
 plt.xlabel('Number of clusters')
 plt.ylabel('Percentage of variance explained (%)')
-plt.title('Elbow for KMeans clustering')
+plt.savefig("4mer-kmean-cluster-Elbow.pdf")
+# plt.title('Elbow for KMeans clustering')
 
 # show centroids for K=10 clusters
 # plt.figure()
@@ -89,22 +92,25 @@ fig = plt.figure()
 # plt.legend()
 # plt.title('Actual Digits')
 
+
+
 print cIdx[kIdx]
 
 print X
 
+# plt.figure(figsize=(15, 7))
 ax = fig.add_subplot(111)
 for i in range(len(cIdx[kIdx])):
     cIndex = cIdx[kIdx][i]
     label = kmer_label[i]
     ax.scatter(X[i,0],X[i,1], s=35, c=clr[cIndex], marker=mrk[cIndex]);
-    # plt.annotate(label,
-    #              size=8,
-    #              xy=(X[i,0],X[i,1]),
-    #              xytext=(4, 2),
-    #              textcoords='offset points',
-    #              ha='right',
-    #              va='bottom')
+    plt.annotate(label,
+                 size=5,
+                 xy=(X[i,0],X[i,1]),
+                 xytext=(4, 2),
+                 textcoords='offset points',
+                 ha='right',
+                 va='bottom')
 
 # ax = fig.add_subplot(111)
 # for i in range(kIdx+1):
@@ -122,4 +128,5 @@ for i in range(len(cIdx[kIdx])):
 plt.legend()
 # plt.title('Clusters Number:%d'%KK[kIdx])
 
-plt.show()
+# plt.show()
+plt.savefig("4mer-kmean-cluster.pdf")

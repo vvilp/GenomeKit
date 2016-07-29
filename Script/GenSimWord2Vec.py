@@ -1,8 +1,11 @@
 import gensim, logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
+k=4
+sig_len = 512
 gene_file = "all_dna.fa"
-k=5
+output_file_path = "dna-w2v-%dmer-%d-sig" % (k,sig_len)
+
 
 def GeneToKmers(gene,k):
     kmer_list = []
@@ -23,8 +26,8 @@ def GeneToSentences(path):
 
 sentences = GeneToSentences(gene_file)
 
-model = gensim.models.Word2Vec(sentences, size=512)
-model.save_word2vec_format("testmode")
+model = gensim.models.Word2Vec(sentences, size=sig_len, sg=1)
+model.save_word2vec_format(output_file_path)
 
 # sentences = [['first', 'sentence'], ['second', 'sentence']]
 # # train word2vec on the two sentences

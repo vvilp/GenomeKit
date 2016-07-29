@@ -9,8 +9,8 @@ S001/00001 Q0 S001/00006 0 0.000052 STANDARD
 
 import re
 
-blast_output_file = "../TestData3_test89/blast_experiment/output"
-trec_output_file = "../TestData3_test89/blast_experiment/trec_result_blast"
+blast_output_file = "../swiss-prot/blast/blastp-fast-output"
+trec_output_file = "../swiss-prot/blast/blastpfast_trec_result"
 
 
 

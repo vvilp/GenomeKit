@@ -1,11 +1,16 @@
 import sys
 import random
 
-k = 6
-sig_len = 2048
+# k = 3
+# sig_len = 256
+# kmer_label_file_path = "./" + str(k) + "mer_label"
+# sig_file_path =  "./" + str(k) + "mer_rand_sig_" + str(sig_len)
+# kmer_alph = "ACGT"
+k = 4
+sig_len = 256
 kmer_label_file_path = "./" + str(k) + "mer_label"
 sig_file_path =  "./" + str(k) + "mer_rand_sig_" + str(sig_len)
-kmer_alph = "ACGT"
+kmer_alph = "ABCDEFGHIKLMNPQRSTVWXYZ"
 
 kmer_label_file = open(kmer_label_file_path, "w");
 sig_file = open(sig_file_path, "w");

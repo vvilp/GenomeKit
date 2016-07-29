@@ -38,12 +38,12 @@ class UT_File {
 
 class UT_Math {
        public:
-	// static int RandInt(int min, int max) {
-	// 	std::random_device seeder;
-	// 	std::mt19937 engine(seeder());
-	// 	std::uniform_int_distribution<int> dist(min, max);
-	// 	return dist(engine);
-	// }
+	static int RandInt(int min, int max) {
+		std::random_device seeder;
+		std::mt19937 engine(seeder());
+		std::uniform_int_distribution<int> dist(min, max);
+		return dist(engine);
+	}
 
 	static float RandFloat(float min, float max) {
 		float random = ((float)rand()) / (float)RAND_MAX;

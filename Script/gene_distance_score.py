@@ -1,10 +1,14 @@
 import numpy as np
 from scipy.spatial import distance
 
-sig_name = "genes_small.faa_2mer_256_sig"
-gene_sig_name = "gene_sig_" + sig_name
-gene_sig_file = "../TestData3_test89/sig/" + gene_sig_name
-gene_trect_result_output = "../TestData3_test89/Precision_recall/" + gene_sig_name + "_rec_result"
+# gene_sig_name = "gene_sig_" + sig_name
+# gene_sig_file = "../TestData3_test89/sig/" + gene_sig_name
+# gene_trect_result_output = "../TestData3_test89/Precision_recall/" + gene_sig_name + "_rec_result"
+
+gene_sig_name = "swissprot-sequences.faa-d2v-3mer-512-sig"
+gene_sig_file = "./" + gene_sig_name
+gene_trect_result_output = "./" + gene_sig_name + "_trec_result"
+
 f_gene_sig = open(gene_sig_file, "r")
 
 # f_dis_w = open(gene_distance_output, "w")
@@ -13,9 +17,9 @@ f_trec_w = open(gene_trect_result_output, "w")
 sig_dict = dict()
 label = ""
 sig = []
-for line in f_gene_sig:
+for i,line in enumerate(f_gene_sig):
     line = line.strip()
-    if line[0] == 'g':
+    if i % 2 == 0:
         label = line
     else:
         sig = [float(x) for x in line.split()]

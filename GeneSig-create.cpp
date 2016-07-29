@@ -117,8 +117,8 @@ class GeneSigDistance {
 			UT_String::trim(line);
 			// cout << line << endl;
 			if (line[0] == '>') {
-
 				geneName = line.substr(1, line.find(',') - 1);
+
 				// transfer G1_SE015 -> >S015/00001
 				// char name[100];
 				// string first = geneName.substr(geneName.find("SE") + 2);
@@ -165,19 +165,19 @@ class GeneSigDistance {
 	}
 
 	void GetGeneSigs(string genePath, string sigPath, int threadNum) {
-		// if (UT_File::IsFileExist(sigPath)) {
-		// 	cout << "Gene sig exist. Read from file" << endl;
-		// 	GetSigs(sigPath, genes, geneSigs, geneSigDict);
-        //
-		// } else {
-		// 	cout << "Gene sig does not exist. Generating" << endl;
-		// 	GenerateGeneSigs(genePath, threadNum);
-		// 	SaveGeneSigs(sigPath);
-		// }
-        cout << "Gene sig generating" << endl;
-        GenerateGeneSigs(genePath, threadNum);
-		geneNum = genes.size();
-		cout << "Genes num: " << geneNum << endl;
+		if (UT_File::IsFileExist(sigPath)) {
+			cout << "Gene sig exist. Read from file" << endl;
+			GetSigs(sigPath, genes, geneSigs, geneSigDict);
+
+		} else {
+			cout << "Gene sig does not exist. Generating" << endl;
+			GenerateGeneSigs(genePath, threadNum);
+			SaveGeneSigs(sigPath);
+		}
+        // cout << "Gene sig generating" << endl;
+        // GenerateGeneSigs(genePath, threadNum);
+		// geneNum = genes.size();
+		// cout << "Genes num: " << geneNum << endl;
 	}
 
 	void CalculatGeneDistScoreThread(int threadIndex, int threadNum) {
@@ -299,9 +299,6 @@ int main(int arg, char *argvs[]) {
 	GeneSigDistance gsd;
 	gsd.GetKmerSigs(kmerSigPath);
 	gsd.GetGeneSigs(genePath, geneSigPath, threadNum);
-    int t0 = time(NULL);
-	gsd.CalculateGenePairDistScore(threadNum, 200);
-    int t1 = time(NULL);
-    std::cout << "Time = " << t1 - t0 <<std::endl;
-	gsd.SaveTrecEval(geneSigPath + "_trec_result");
+	// gsd.CalculateGenePairDistScore(threadNum, 200);
+	// gsd.SaveTrecEval(geneSigPath + "_trec_result");
 }

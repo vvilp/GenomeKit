@@ -90,6 +90,14 @@ class GeneSigDistance {
 		cout << "sig len: " << kmerSigs[0].size() << endl;
 	}
 
+    vector<float> GetKmerSig(string kmer) {
+        if(kmerSigDict.find(kmer) != kmerSigDict.end()) {
+            return kmerSigDict[kmer];
+        } else {
+            return vector<float>(kmerSigLen,0.0);
+        }
+    }
+
 	void GenePartitionSig(const string &gene, int geneIndex) {
 		// cout << gene << endl;
 
@@ -112,7 +120,7 @@ class GeneSigDistance {
 
 			for (int ki = 0; ki < geneKmers.size(); ki++) {
 				// cout << geneKmers[ki] << endl;
-				vector<float> kmerSig = kmerSigDict[geneKmers[ki]];
+				vector<float> kmerSig = GetKmerSig(geneKmers[ki]);
 				for (int j = 0; j < kmerSigLen; j++) {
 					PartSig[j] += kmerSig[j];
 				}
@@ -159,11 +167,11 @@ class GeneSigDistance {
 				geneName = line.substr(1, line.find(',') - 1);
 
 				// transfer G1_SE015 -> >S015/00001
-				char name[100];
-				string first = geneName.substr(geneName.find("SE") + 2);
-				int second = stoi(geneName.substr(1, geneName.find('_') - 1));
-				sprintf(name, "S%s/%05d", first.c_str(), second);
-				geneName = string(name);
+				// char name[100];
+				// string first = geneName.substr(geneName.find("SE") + 2);
+				// int second = stoi(geneName.substr(1, geneName.find('_') - 1));
+				// sprintf(name, "S%s/%05d", first.c_str(), second);
+				// geneName = string(name);
 
 				genes.push_back(geneName);
 			} else {
@@ -270,6 +278,7 @@ class GeneSigDistance {
 		// }
 
         int lenDiffW = abs((long)(genePartSigs[geneA].size() - genePartSigs[geneB].size())) * 2000;
+        // int lenDiffW = 0;
 
         float result = avgScore / count - lenDiffW;
         result = result <= 0.0? 1.0: result;
@@ -286,7 +295,7 @@ class GeneSigDistance {
 			if (pairDistScore[geneA][geneB] != 0.0 || pairDistScore[geneB][geneA] != 0.0) {
 				score = pairDistScore[geneA][geneB] != 0.0 ? pairDistScore[geneA][geneB] : pairDistScore[geneB][geneA];
 			} else {
-				score = CalculateTopGenePartScore(geneA, geneB, 5);
+				score = CalculateTopGenePartScore(geneA, geneB, 3);
 				pairDistScore[geneA][geneB] = score;
 				pairDistScore[geneB][geneA] = score;
 			}
@@ -398,13 +407,15 @@ int main(int arg, char *argvs[]) {
 	string kmerSigPath = string(argvs[1]);
 	string genePath = string(argvs[2]);
 	string threadNumStr = string(argvs[3]);
+    int partLen = stoi(string(argvs[4]));
+    int overLen = stoi(string(argvs[5]));
 	string geneSigPath = kmerSigPath + "_gene_sig";
 
 	int threadNum = stoi(threadNumStr);
 	cout << "Thread Num: " << threadNum << endl;
 
 	GeneSigDistance gsd;
-	gsd.Init(threadNum, 20, 5, 500);
+	gsd.Init(threadNum, partLen, overLen, 4000);
 	gsd.GetKmerSigs(kmerSigPath);
 	gsd.GetGeneSigs(genePath, geneSigPath);
 	gsd.CalculateGenePairDistScore();

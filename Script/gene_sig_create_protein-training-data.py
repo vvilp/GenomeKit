@@ -14,22 +14,22 @@ import numpy as np
 # gene_sig_output = "../TestData3_test89/sig/" + gene_sig_name
 
 k=3
-sig_name = "swissprot-sequences-3mer-512-sig-1"
-gene_sig_name = sig_name + "gene_sig_"
+sig_name = "protein-tf-idf-3mer-512"
+# gene_sig_name = sig_name + "gene_sig"
 sig_file = "./" + sig_name
 gene_file = "swissprot-sequences.faa"
-gene_sig_output = "./" + gene_sig_name
+gene_sig_output = "./sequence-512-tfidf-rep-for-training.csv"
 
 
 f_sig = open(sig_file, "r")
 f_gene = open(gene_file, "r")
 f_w = open(gene_sig_output, "w")
 
-def save_sig(label, sig, file):
-    file.write(label)
-    file.write("\n")
+def save_sig(label, sig, family, file):
+    file.write("%d" % family)
+    file.write(" ")
     for i in range (0, sig.shape[0]):
-        file.write("%.2f" % sig[i])
+        file.write("%.3f" % sig[i])
         if i < sig.shape[0] - 1 :
             file.write(" ")
     file.write("\n")
@@ -58,7 +58,8 @@ def gene_sig(s,k):
     return sig
 
 gene_label = ""
-for each_line in f_gene:
+family_count = 0
+for i, each_line in enumerate(f_gene):
     each_line = each_line.strip()
     # print each_line
     sig = dict()
@@ -70,4 +71,6 @@ for each_line in f_gene:
         print gene_label
     else:
         sig = gene_sig(each_line, k)
-        save_sig(gene_label, sig, f_w)
+        save_sig(gene_label, sig, family_count, f_w)
+    if i % 200 == 0:
+        family_count+=1

@@ -1,7 +1,7 @@
 import re
 import Queue
 
-path = "../TestData2/alfsim-data2/experiment_result/clustal_distance"
+path = "clustal_protein_distance"
 f = open(path, "r")
 f_trec_w = open(path+"_trect_result", "w")
 row = int(f.readline().strip())
@@ -11,9 +11,11 @@ distance_str_array = []
 
 for i in range(0, row):
     line = f.readline().strip()
-    label, distance_str = [x.strip() for x in line.split(',')]
-    label_indexs = re.findall(r'\d+', label)
-    label = "S" + label_indexs[1] +  "/" + label_indexs[0].zfill(5)
+    # label, distance_str = [x.strip() for x in line.split(',')]
+    # label_indexs = re.findall(r'\d+', label)
+    # label = "S" + label_indexs[1] +  "/" + label_indexs[0].zfill(5)
+    label = line[0:6]
+    distance_str = line[7:]
     label_arr.append(label)
     distance_str_array.append(distance_str.strip())
 
