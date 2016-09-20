@@ -9,9 +9,9 @@ S001/00001 Q0 S001/00006 0 0.000052 STANDARD
 
 import re
 
-label_input_file = "../TestData2/alfsim-data2/MSA/MSA_all_dna.phy"
-blast_output_file = "../TestData2/alfsim-data2/blast-experiment/mega-output"
-trec_output_file = "../TestData2/alfsim-data2/experiment_result/trec_result_megablast"
+label_input_file = "../alf-prot/data/MSA_all_aa.phy"
+blast_output_file = "../alf-prot/Blast/blastp-fast-output"
+trec_output_file = "../alf-prot/Blast/blastp-fast-output_trect"
 
 f_dna = open(label_input_file, "r")
 label_array = []

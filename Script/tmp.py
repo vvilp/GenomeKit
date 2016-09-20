@@ -1,4 +1,5 @@
 import os
+import sys
 
 # input_file_path_label = "../tmp/6mer_label"
 # input_file_path_sig = "../tmp/6mer_RandIndexing_Sig-autoencoder-256"
@@ -20,14 +21,17 @@ import os
 #     output.write(labels[i])
 #     output.write(sigs[i])
 
-k=4
-input_file = open("dna-w2v-4mer-512-sig","r")
-output_file = open("dna-w2v-4mer-512-sig-2","w")
+k=int(sys.argv[1])
+path = sys.argv[2]
+input_file = open(path,"r")
+output_file = open(path+"_reformat","w")
 
 for i, line in enumerate(input_file):
     # print line
     if i ==0:
         continue
+    line = line.strip()
     output_file.write(line[0:k])
     output_file.write("\n")
     output_file.write(line[k+1:])
+    output_file.write("\n")

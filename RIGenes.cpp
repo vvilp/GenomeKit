@@ -1,9 +1,15 @@
-#include <iostream>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <fstream>
-#include <vector>
-#include <memory>
-#include <string>
+#include <iostream>
 #include <map>
+#include <queue>
+#include <random>
+#include <sstream>
+#include <thread>
+#include <utility>
+#include <vector>
 #include "Util.hpp"
 using namespace std;
 
@@ -20,12 +26,12 @@ vector<int> GetRandomIndexVector(int size, float density)
     return RIndexVector;
 }
 
-void KmerRISig()
+void KmerRISig(int kmerLen, int sigLen, string path, string savePath)
 {
-    int kmerLen = 2;
-    int sigLen = 1024;
-    string path = "genes_small.faa";
-    string savePath = "protein-2mer-1024-ri";
+    cout << kmerLen << endl;
+    cout << sigLen << endl;
+    cout << path << endl;
+    cout << savePath << endl;
 
     map<string, vector<int>> kmerSigDict;
 
@@ -76,7 +82,14 @@ void KmerRISig()
 
 }
 
-int main()
+int main(int arg, char *argvs[])
 {
-    KmerRISig();
+    srand(time(NULL));
+    int kmerLen = stoi(string(argvs[1]));
+    int sigLen = stoi(string(argvs[2]));
+    string genePath = string(argvs[3]);
+    string savePath = string(argvs[4]);
+    KmerRISig(kmerLen,sigLen,genePath,savePath);
+
+
 }

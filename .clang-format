@@ -1,4 +1,4 @@
 BasedOnStyle: google
-IndentWidth: 2
+IndentWidth: 4
 # UseTab: Always
-ColumnLimit: 80
+ColumnLimit: 200

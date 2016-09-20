@@ -1,4 +1,4 @@
-#include <cstdlib>
+// #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <fstream>
@@ -55,11 +55,11 @@ class GeneSigDistance {
                 geneName = line.substr(1, line.find(',') - 1);
 
                 // transfer G1_SE015 -> >S015/00001
-                char name[100];
-                string first = geneName.substr(geneName.find("SE") + 2);
-                int second = stoi(geneName.substr(1, geneName.find('_') - 1));
-                sprintf(name, "S%s/%05d", first.c_str(), second);
-                geneName = string(name);
+                // char name[100];
+                // string first = geneName.substr(geneName.find("SE") + 2);
+                // int second = stoi(geneName.substr(1, geneName.find('_') - 1));
+                // sprintf(name, "S%s/%05d", first.c_str(), second);
+                // geneName = string(name);
 
                 genes.push_back(geneName);
             } else {
@@ -331,7 +331,7 @@ int main(int arg, char *argvs[]) {
 	gsd.GetKmerSigs(kmerSigPath);
 	gsd.GetGeneSigs(genePath, geneSigPath, threadNum);
 	gsd.CalculateGenePairDistScore(threadNum, 3000);
-	gsd.SaveTrecEval(geneSigPath + "_trec_result");
+	gsd.SaveTrecEval(geneSigPath + "_tfidf_trec_result");
 
     // map<string,int> test;
     // test["asd"] = 1;

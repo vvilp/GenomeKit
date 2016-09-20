@@ -4,8 +4,8 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 k=3
 sig_len = 512
-gene_file = "swissprot-sequences.faa"
-output_file_path = "d2v-%dmer-%d-sig" % (k,sig_len)
+gene_file = "data/swissprot-sequences.faa"
+output_file_path = "data/d2v-%dmer-%d-sig" % (k,sig_len)
 gene_sig_file_path = gene_file + "-d2v-%dmer-%d-sig" % (k,sig_len)
 
 
@@ -47,13 +47,13 @@ sentences = GeneToSentences(gene_file)
 #     print each.tags
 
 model = gensim.models.Doc2Vec(sentences, size=sig_len)
-# model.save_word2vec_format(output_file_path)
+model.save_word2vec_format(output_file_path)
 
 # print model.wmdistance(sentences[0].words, sentences[1].words)
 # print model.wmdistance(sentences[0].words, sentences[2].words)
-gene_sig_file = open(gene_sig_file_path, "w");
-for i, each in enumerate(sentences):
-    save_sig(each.tags, model.docvecs[i], gene_sig_file)
+# gene_sig_file = open(gene_sig_file_path, "w");
+# for i, each in enumerate(sentences):
+#     save_sig(each.tags, model.docvecs[i], gene_sig_file)
 
 
 # print model.docvecs[0]

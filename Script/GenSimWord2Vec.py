@@ -1,10 +1,10 @@
 import gensim, logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-k=4
+k=5
 sig_len = 512
-gene_file = "all_dna.fa"
-output_file_path = "dna-w2v-%dmer-%d-sig" % (k,sig_len)
+gene_file = "all_prot.fa"
+output_file_path = "%dmer-%d-sig" % (k,sig_len)
 
 
 def GeneToKmers(gene,k):

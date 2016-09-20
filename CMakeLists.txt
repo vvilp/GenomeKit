@@ -24,12 +24,19 @@ add_executable(SemanticNeuralNetwork ${SemanticNeuralNetwork} ${HEADER_FILES})
 set(GeneSigDistance GeneSigDistance.cpp)
 add_executable(GeneSigDistance ${GeneSigDistance} ${HEADER_FILES})
 
+set(GeneSigDistance-tfidf GeneSigDistance-tfidf.cpp)
+add_executable(GeneSigDistance-tfidf ${GeneSigDistance-tfidf} ${HEADER_FILES})
+
 set(GeneSig-create GeneSig-create.cpp)
 add_executable(GeneSig-create ${GeneSig-create} ${HEADER_FILES})
 
 set(GeneSigDistance-partition GeneSigDistance-partition.cpp)
 add_executable(GeneSigDistance-partition ${GeneSigDistance-partition} ${HEADER_FILES})
 
+
+set(RIGenes RIGenes.cpp)
+add_executable(RIGenes ${RIGenes})
+target_link_libraries(RIGenes ${Boost_LIBRARIES} boost_system)
 
 # find_package(Boost 1.58.0 REQUIRED COMPONENTS filesystem)
 # include_directories(${Boost_INCLUDE_DIR})

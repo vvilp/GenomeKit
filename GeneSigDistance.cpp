@@ -40,12 +40,15 @@ class GeneSigDistance {
 
 	// functions
 	void GetSigs(string path, vector<string> &labels, vector<vector<float>> &sigs, map<string, vector<float>> &dict) {
+        cout << "GetSigs" << endl;
 		std::ifstream t(path);
 		std::stringstream buffer;
 		buffer << t.rdbuf();
 		string line = "";
 		string label = "";
+        cout << "before FOR" << endl;
 		for (int i = 0; getline(buffer, line); i++) {
+            // cout << line << endl;
 			UT_String::trim(line);
 			if (i % 2 == 0) {
 				label = line;
@@ -201,8 +204,18 @@ class GeneSigDistance {
 					} else {
 						dist = UT_Math::TMPDis(geneSigs[i], geneSigs[j]);
 						dist = (1.0 / (1.0 + (dist + lengthDiff * 0.01))) * 1000000;
+                        // dist = UT_Math::TMPDis(geneSigs[i], geneSigs[j]);
+                        // int tmp = (1.0 / (1.0 + (dist + lengthDiff * 0.01))) * 1000000;
+                        // if (tmp > 1000000) {
+                        //     cout << "WARN dist: dist" << endl;
+                        // }
 					}
 				}
+
+                if (dist > 1000000) {
+                    cout << "WARN dist: dist" << endl;
+                }
+
 				pairDistScore[i][j] = dist;
 				pairDistScore[j][i] = dist;
 
@@ -228,6 +241,7 @@ class GeneSigDistance {
 		pairDistScore = new float *[geneNum];
 		for (size_t i = 0; i < geneNum; i++) {
 			pairDistScore[i] = new float[geneNum];
+            memset(pairDistScore[i], 0.0, sizeof(pairDistScore[0][0]) * geneNum);
 		}
 
 		finishCount = 0;

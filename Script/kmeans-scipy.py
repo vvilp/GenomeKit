@@ -8,7 +8,7 @@ from matplotlib import cm
 
 
 # k = 5
-sig_name = "dna-w2v-4mer-512-sig-2"
+sig_name = "data/dna-w2v-3mer-512-sig-2"
 sig_file_path = "./" + sig_name
 cluster_output_path = "./" + sig_name + "_cluster_output"
 
@@ -127,6 +127,6 @@ for i in range(len(cIdx[kIdx])):
 
 plt.legend()
 # plt.title('Clusters Number:%d'%KK[kIdx])
-
+plt.tight_layout()
 # plt.show()
-plt.savefig("4mer-kmean-cluster.pdf")
+plt.savefig("3mer-kmean-cluster.pdf")

@@ -1,10 +1,10 @@
 from collections import defaultdict
 
-f_sequence = open("family_classification_sequences.csv", "r")
-f_meta = open("family_classification_metadata_csv.csv", "r")
+f_sequence = open("data/family_classification_sequences.csv", "r")
+f_meta = open("data/family_classification_metadata_csv.csv", "r")
 
-output_sequence = open("swissprot-sequences.faa", "w")
-output_family = open("swissprot-family-group", "w")
+output_sequence = open("data/512-family-swissprot-sequences.faa", "w")
+output_family = open("data/512-family-swissprot-family-group", "w")
 
 gene_family_dict = defaultdict(list)
 
@@ -23,26 +23,26 @@ for i, line in enumerate(f_meta):
     # if i == 4001:
     #     break
 
-each_count = 100
-total_count = 5000
-count = 0
+num_seq_in_family = 20
+num_family = 512
+count_family = 0
 sequence_set = set()
 for key, value in gene_family_dict.iteritems():
-    if len(value) < each_count:
+    if len(value) < num_seq_in_family * 2:
         continue
-    each_family_count = 0
+    count_seq_in_family = 0
     for i, item in enumerate(value):
-        if each_family_count == each_count:
+        # if item[1] not in sequence_set:
+        output_sequence.write(">" + item[1] + "\n")
+        output_sequence.write(seq_list[item[0]] + "\n")
+        output_family.write(item[1] + " ")
+        sequence_set.add(item[1])
+        count_seq_in_family+=1
+        if count_seq_in_family == num_seq_in_family:
+            count_family+=1
             break
-        if item[1] not in sequence_set:
-            output_sequence.write(">" + item[1] + "\n")
-            output_sequence.write(seq_list[item[0]] + "\n")
-            output_family.write(item[1] + " ")
-            sequence_set.add(item[1])
-            each_family_count+=1
-            count+=1
     output_family.write("\n")
-    if total_count == count:
+    if count_family == num_family:
         break
 
 
